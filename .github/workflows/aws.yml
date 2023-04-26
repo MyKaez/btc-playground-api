@@ -39,6 +39,6 @@ jobs:
         sudo apt-get install -y zip
         cd ./publish
         zip -r application.zip .
-        aws s3 cp application.zip s3://my-bucket/
+        aws s3 cp application.zip s3://elasticbeanstalk-eu-central-1-084374805449
         aws elasticbeanstalk create-application-version --application-name btc-playground-api --version-label v-${{ github.run_number }} --source-bundle S3Bucket="my-bucket",S3Key="application.zip"
         aws elasticbeanstalk update-environment --environment-name development --version-label v-${{ github.run_number }}
