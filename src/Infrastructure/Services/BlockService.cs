@@ -5,8 +5,17 @@ namespace Infrastructure.Services;
 
 public class BlockService : IBlockService
 {
-    public Task<IEnumerable<Block>?> GetBlocks(CancellationToken cancellationToken)
+    private readonly MempoolService _mempoolService;
+
+    public BlockService(MempoolService mempoolService)
     {
-        return Task.Run(new Func<IEnumerable<Block>?>(() => null), cancellationToken);
+        _mempoolService = mempoolService;
+    }
+
+    public async Task<IEnumerable<Block>?> GetBlocks(CancellationToken cancellationToken)
+    {
+        var blocks = await _mempoolService.GetBlocks();
+        
+        return blocks;
     }
 }

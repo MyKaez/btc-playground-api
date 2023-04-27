@@ -7,11 +7,9 @@ namespace Application.Queries;
 
 public static class GetLatestBlocks
 {
-    public record Query : Request<Response>;
+    public record Query : Request<Block[]>;
 
-    public record Response(Block[] Items);
-
-    public class Handler : RequestHandler<Query, Response>
+    public class Handler : RequestHandler<Query, Block[]>
     {
         private readonly IBlockService _blockService;
 
@@ -20,7 +18,7 @@ public static class GetLatestBlocks
             _blockService = blockService;
         }
 
-        public override async Task<RequestResult<Response>> Handle(Query request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Block[]>> Handle(Query request, CancellationToken cancellationToken)
         {
             var blocks = await _blockService.GetBlocks(cancellationToken);
 
@@ -28,9 +26,8 @@ public static class GetLatestBlocks
                 return NotFound();
 
             var items = blocks.ToArray();
-            var res = new Response(items);
-            
-            return new RequestResult<Response>(res);
+
+            return new RequestResult<Block[]>(items);
         }
     }
 }
