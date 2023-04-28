@@ -1,0 +1,1 @@
+dotnet publish btc-playground-api.sln -c Release -o pub/
