@@ -5,6 +5,13 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <EnvironmentName>Development</EnvironmentName>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <EnvironmentName>Production</EnvironmentName>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4" />
