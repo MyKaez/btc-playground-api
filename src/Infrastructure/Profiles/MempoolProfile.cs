@@ -11,7 +11,7 @@ public class MempoolProfile : Profile
         CreateMap<MempoolBlock, Block>().ForMember(
             b => b.TimeStamp,
             opt => opt.MapFrom(
-                (mb, b) => DateTime.MinValue
+                (mb, b) => DateTimeOffset.FromUnixTimeSeconds(mb.TimeStamp).DateTime
             )
         );
     }
