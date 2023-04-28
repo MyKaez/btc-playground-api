@@ -13,4 +13,6 @@ public record Block
     public double Difficulty { get; init; }
 
     public double HashRate => Difficulty * (2 ^ 32) / Defaults.BlockDurationInSeconds;
+
+    public double Probability => 1 / Difficulty / Defaults.BlockDurationInSeconds;
 }

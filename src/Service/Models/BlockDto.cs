@@ -13,4 +13,6 @@ public class BlockDto
     public double Difficulty { get; init; }
 
     public double HashRate { get; init; }
+    
+    public double Probability { get; init; }
 }
