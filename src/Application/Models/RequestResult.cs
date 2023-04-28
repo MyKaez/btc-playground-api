@@ -1,9 +1,11 @@
-﻿namespace Application.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Application.Models;
 
 public abstract class RequestResult
 {
     public IRequestError? Error { get; init; }
-    
+
     public bool IsValid { get; protected set; }
     
     public abstract object? Value { get; }

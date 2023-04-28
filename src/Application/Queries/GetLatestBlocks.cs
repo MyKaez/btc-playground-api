@@ -26,8 +26,9 @@ public static class GetLatestBlocks
                 return NotFound();
 
             var items = blocks.ToArray();
+            var res = new RequestResult<Block[]>(items);
 
-            return new RequestResult<Block[]>(items);
+            return res;
         }
     }
 }

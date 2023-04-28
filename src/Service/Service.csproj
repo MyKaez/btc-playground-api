@@ -12,10 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Models\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 

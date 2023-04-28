@@ -12,10 +12,8 @@ public class BlockService : IBlockService
         _mempoolService = mempoolService;
     }
 
-    public async Task<IEnumerable<Block>?> GetBlocks(CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<Block>?> GetBlocks(CancellationToken cancellationToken)
     {
-        var blocks = await _mempoolService.GetBlocks();
-        
-        return blocks;
+        return _mempoolService.GetBlocks(cancellationToken);
     }
 }

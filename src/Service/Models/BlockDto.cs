@@ -1,6 +1,6 @@
-﻿namespace Domain.Models;
+﻿namespace Service.Models;
 
-public record Block
+public class BlockDto
 {
     public string Id { get; init; } = null!;
 
@@ -12,5 +12,5 @@ public record Block
 
     public double Difficulty { get; init; }
 
-    public double HashRate => Difficulty * (2 ^ 32) / Defaults.BlockDurationInSeconds;
+    public double HashRate { get; init; }
 }

@@ -6,10 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Installers;
 
-public class ServiceInstaller:IInstaller
+public class ServiceInstaller : IInstaller
 {
     public void Install(IServiceCollection services, IConfiguration config)
     {
         services.AddTransient<IBlockService, BlockService>();
+        services.AddTransient<IPriceService, PriceService>();
     }
 }

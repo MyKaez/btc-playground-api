@@ -25,7 +25,7 @@ public record MempoolBlock
 public class MempoolService
 {
     public const string HttpClientFactoryName = "MEMPOOL_SERVICE";
-    
+
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMapper _mapper;
 
@@ -35,10 +35,10 @@ public class MempoolService
         _mapper = mapper;
     }
 
-    public async Task<Block[]?> GetBlocks()
+    public async Task<IReadOnlyCollection<Block>?> GetBlocks(CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient(HttpClientFactoryName);
-        var blocks = await client.GetFromJsonAsync<MempoolBlock[]>("blocks");
+        var blocks = await client.GetFromJsonAsync<MempoolBlock[]>("blocks", cancellationToken);
         var res = _mapper.Map<Block[]>(blocks);
 
         return res;

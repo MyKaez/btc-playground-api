@@ -4,5 +4,5 @@ namespace Application.Services;
 
 public interface IBlockService
 {
-    Task<IEnumerable<Block>?> GetBlocks(CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<Block>?> GetBlocks(CancellationToken cancellationToken);
 }
