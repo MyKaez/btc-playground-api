@@ -31,7 +31,7 @@ public class SessionService : ISessionService
         return session;
     }
 
-    public Session? CreateService(string name, JsonElement configuration)
+    public Session? CreateService(string name, JsonElement? configuration)
     {
         var session = new Session
         {

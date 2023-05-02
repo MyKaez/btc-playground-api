@@ -17,6 +17,9 @@ public class ResponseProfile : Profile
         CreateMap<Session, SessionDto>()
             .ForMember(p => p.ExpirationTime,
                 opt => opt.MapFrom(p => DateTime.Now.Add(p.ExpiresIn)));
+        CreateMap<Session, SessionControlDto>()
+            .ForMember(p => p.ExpirationTime,
+                opt => opt.MapFrom(p => DateTime.Now.Add(p.ExpiresIn)));
         CreateMap<User, UserDto>();
     }
 }

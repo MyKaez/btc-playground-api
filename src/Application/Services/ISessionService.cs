@@ -7,5 +7,5 @@ public interface ISessionService
 {
     Session? GetById(Guid id);
 
-    Session? CreateService(string name, JsonElement configuration);
+    Session? CreateService(string name, JsonElement? configuration);
 }

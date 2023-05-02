@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 using Application.Handlers;
 using Application.Models;
 using Application.Services;
@@ -9,7 +8,7 @@ namespace Application.Commands;
 
 public static class RegisterSession
 {
-    public record Command(string Name, JsonElement Configuration) : Request<Session>;
+    public record Command(string Name, JsonElement? Configuration) : Request<Session>;
 
     public class Handler : RequestHandler<Command, Session>
     {

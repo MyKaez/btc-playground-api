@@ -38,7 +38,7 @@ public class SessionController : BaseController
         return Result(res, session => _mapper.Map<SessionControlDto>(session));
     }
 
-    [HttpPost("{sessionId:guid}")]
+    [HttpPost("{sessionId:guid}/actions")]
     public IActionResult Post(Guid sessionId, [FromBody] SessionActionRequest request)
     {
         return BadRequest();
