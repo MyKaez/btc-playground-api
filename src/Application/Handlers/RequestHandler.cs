@@ -12,4 +12,9 @@ public abstract class RequestHandler<TInput, TResponse> : IRequestHandler<TInput
     {
         return new RequestResult<TResponse>(NotFoundResult.Obj);
     }
+    
+    protected RequestResult<TResponse> BadRequest(string errorMessage)
+    {
+        return new RequestResult<TResponse>(new BadRequest(errorMessage));
+    }
 }

@@ -48,4 +48,40 @@ public class SessionService : ISessionService
             return session with { ExpiresIn = entry.SlidingExpiration.Value };
         });
     }
+
+    public Session StartSession(Session session)
+    {
+        var options = new MemoryCacheEntryOptions
+        {
+            SlidingExpiration = TimeSpan.FromMinutes(5)
+        };
+        
+        session = session with
+        {
+            ExecutionStatus = SessionExecutionStatus.Started,
+            ExpiresIn = options.SlidingExpiration.Value
+        };
+
+        _memoryCache.Set(session.Id, session, options);
+
+        return session;
+    }
+
+    public Session StopSession(Session session)
+    {
+        var options = new MemoryCacheEntryOptions
+        {
+            SlidingExpiration = TimeSpan.FromMinutes(5)
+        };
+        
+        session = session with
+        {
+            ExecutionStatus = SessionExecutionStatus.Stopped,
+            ExpiresIn = options.SlidingExpiration.Value
+        };
+
+        _memoryCache.Set(session.Id, session, options);
+
+        return session;
+    }
 }
