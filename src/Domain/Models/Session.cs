@@ -7,6 +7,8 @@ public record Session
     private readonly List<User> _users = new();
 
     public required Guid Id { get; init; }
+    
+    public Guid? ControlId { get; init; }
 
     public required string Name { get; init; }
 

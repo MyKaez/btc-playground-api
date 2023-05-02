@@ -25,7 +25,7 @@ public class SessionService : ISessionService
         };
 
         session = session with { ExpiresIn = options.SlidingExpiration.Value };
-        
+
         _memoryCache.Set(id, session, options);
 
         return session;
@@ -36,7 +36,8 @@ public class SessionService : ISessionService
         var session = new Session
         {
             Id = Guid.NewGuid(),
-            Name = name, 
+            ControlId = Guid.NewGuid(),
+            Name = name,
             Configuration = configuration
         };
 

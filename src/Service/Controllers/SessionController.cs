@@ -35,7 +35,13 @@ public class SessionController : BaseController
         var cmd = new RegisterSession.Command(request.Name, request.Configuration);
         var res = await _mediator.Send(cmd);
 
-        return Result(res, session => _mapper.Map<SessionDto>(session));
+        return Result(res, session => _mapper.Map<SessionControlDto>(session));
+    }
+
+    [HttpPost("{sessionId:guid}")]
+    public IActionResult Post(Guid sessionId, [FromBody] SessionActionRequest request)
+    {
+        return BadRequest();
     }
 
     [HttpPost("{sessionId:guid}/users")]
