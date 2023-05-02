@@ -12,7 +12,7 @@ public class ServiceProfile : Profile
             .ForMember(
                 b => b.TimeStamp,
                 opt => opt.MapFrom(
-                    (mb, b) => DateTimeOffset.FromUnixTimeSeconds(mb.TimeStamp).DateTime
+                    mb => DateTimeOffset.FromUnixTimeSeconds(mb.TimeStamp).DateTime
                 )
             );
 
@@ -20,15 +20,15 @@ public class ServiceProfile : Profile
             .ForMember(
                 p => p.Currency,
                 opt => opt.MapFrom(
-                    (bip, p) => bip.Currency)
+                    bip => bip.Currency)
             ).ForMember(
                 p => p.CurrentPrice,
                 opt => opt.MapFrom(
-                    (bip, p) => bip.Last)
+                    bip => bip.Last)
             ).ForMember(
                 p => p.PreviousPrice,
                 opt => opt.MapFrom(
-                    (bip, p) => bip._15M)
+                    bip => bip._15M)
             );
     }
 }

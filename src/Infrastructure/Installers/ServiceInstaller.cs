@@ -12,5 +12,7 @@ public class ServiceInstaller : IInstaller
     {
         services.AddTransient<IBlockService, BlockService>();
         services.AddTransient<IPriceService, PriceService>();
+        services.AddTransient<ISessionService, SessionService>();
+        services.AddTransient<IUserService, UserService>();
     }
 }

@@ -12,7 +12,11 @@ public class ResponseProfile : Profile
         CreateMap<Price, PriceDto>()
             .ForMember(
                 p => p.Price,
-                opt => opt.MapFrom((p, pd) => p.CurrentPrice)
+                opt => opt.MapFrom(p => p.CurrentPrice)
             );
+        CreateMap<Session, SessionDto>()
+            .ForMember(p => p.ExpirationTime,
+                opt => opt.MapFrom(p => DateTime.Now.Add(p.ExpiresIn)));
+        CreateMap<User, UserDto>();
     }
 }
