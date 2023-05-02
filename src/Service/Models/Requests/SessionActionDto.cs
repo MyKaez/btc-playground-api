@@ -1,6 +1,6 @@
 ﻿namespace Service.Models.Requests;
 
-public enum SessionAction
+public enum SessionActionDto
 {
     Start,
     Stop

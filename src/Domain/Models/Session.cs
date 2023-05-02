@@ -12,7 +12,7 @@ public record Session
 
     public required string Name { get; init; }
 
-    public SessionExecutionStatus ExecutionStatus { get; init; }
+    public SessionStatus Status { get; init; }
 
     public TimeSpan ExpiresIn { get; init; }
 

@@ -1,6 +1,6 @@
 ﻿namespace Domain.Models;
 
-public enum SessionExecutionStatus
+public enum SessionStatus
 {
     NotStarted,
     Started,

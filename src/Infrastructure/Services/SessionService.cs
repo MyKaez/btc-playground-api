@@ -58,7 +58,7 @@ public class SessionService : ISessionService
         
         session = session with
         {
-            ExecutionStatus = SessionExecutionStatus.Started,
+            Status = SessionStatus.Started,
             ExpiresIn = options.SlidingExpiration.Value
         };
 
@@ -76,7 +76,7 @@ public class SessionService : ISessionService
         
         session = session with
         {
-            ExecutionStatus = SessionExecutionStatus.Stopped,
+            Status = SessionStatus.Stopped,
             ExpiresIn = options.SlidingExpiration.Value
         };
 

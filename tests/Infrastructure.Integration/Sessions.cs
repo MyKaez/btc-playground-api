@@ -36,30 +36,30 @@ public class Sessions
 
         Assert.NotNull(session);
         Assert.NotNull(session.ControlId);
-        Assert.Equal(SessionExecutionStatus.NotStarted, session.ExecutionStatus);
+        Assert.Equal(SessionStatus.NotStarted, session.Status);
 
         return (session.Id, session.ControlId.Value);
     }
 
-    private async Task<SessionExecutionStatus> StartSession(Guid sessionId, Guid controlId)
+    private async Task<SessionStatus> StartSession(Guid sessionId, Guid controlId)
     {
         var command = new ExecuteSession.Command(sessionId, controlId, SessionAction.Start);
         var res = await _mediator.Send(command);
 
         Assert.NotNull(res.Result);
-        Assert.Equal(SessionExecutionStatus.Started, res.Result.ExecutionStatus);
+        Assert.Equal(SessionStatus.Started, res.Result.Status);
 
-        return res.Result.ExecutionStatus;
+        return res.Result.Status;
     }
 
-    private async Task<object> StopSession(Guid sessionId, Guid controlId)
+    private async Task<SessionStatus> StopSession(Guid sessionId, Guid controlId)
     {
         var command = new ExecuteSession.Command(sessionId, controlId, SessionAction.Stop);
         var res = await _mediator.Send(command);
 
         Assert.NotNull(res.Result);
-        Assert.Equal(SessionExecutionStatus.Stopped, res.Result.ExecutionStatus);
+        Assert.Equal(SessionStatus.Stopped, res.Result.Status);
 
-        return res.Result.ExecutionStatus;
+        return res.Result.Status;
     }
 }

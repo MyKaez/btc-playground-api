@@ -1,6 +1,7 @@
 ﻿using Application.Commands;
 using Application.Queries;
 using AutoMapper;
+using Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Service.Models;
@@ -39,9 +40,12 @@ public class SessionController : BaseController
     }
 
     [HttpPost("{sessionId:guid}/actions")]
-    public IActionResult Post(Guid sessionId, [FromBody] SessionActionRequest request)
+    public async Task<IActionResult> Post(Guid sessionId, [FromBody] SessionActionRequest request)
     {
-        return BadRequest();
+        var cmd = new ExecuteSession.Command(sessionId, request.ControlId, _mapper.Map<SessionAction>(request.Action));
+        var res = await _mediator.Send(cmd);
+
+        return Result(res, session => _mapper.Map<SessionDto>(session));
     }
 
     [HttpPost("{sessionId:guid}/users")]

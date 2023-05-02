@@ -8,6 +8,8 @@ public record SessionDto
 
     public required string Name { get; init; }
 
+    public SessionStatusDto Status { get; init; }
+    
     public JsonElement? Configuration { get; init; }
     
     public required DateTime ExpirationTime { get; init; }
