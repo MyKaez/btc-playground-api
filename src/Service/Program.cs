@@ -1,9 +1,15 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Infrastructure;
 using Service.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    });
 builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
