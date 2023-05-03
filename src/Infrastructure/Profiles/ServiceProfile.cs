@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Models;
+using Infrastructure.Mempool;
 using Infrastructure.Services;
 
 namespace Infrastructure.Profiles;
@@ -12,8 +13,18 @@ public class ServiceProfile : Profile
             .ForMember(
                 b => b.TimeStamp,
                 opt => opt.MapFrom(
-                    mb => DateTimeOffset.FromUnixTimeSeconds(mb.TimeStamp).DateTime
-                )
+                    mb => DateTimeOffset.FromUnixTimeSeconds(mb.TimeStamp).DateTime)
+            );
+        CreateMap<MempoolHashRate, HashRateInfo>()
+            .ForMember(
+                h => h.HashRate,
+                opt => opt.MapFrom(
+                    hr => hr.CurrentHashRate)
+            )
+            .ForMember(
+                h => h.Difficulty,
+                opt => opt.MapFrom(
+                    hr => hr.CurrentDifficulty)
             );
 
         CreateMap<BlockchainInfoPrice, Price>()

@@ -2,25 +2,7 @@
 using AutoMapper;
 using Domain.Models;
 
-namespace Infrastructure.Services;
-
-public record MempoolConfig
-{
-    public string Url { get; init; } = null!;
-}
-
-public record MempoolBlock
-{
-    public string Id { get; init; } = null!;
-
-    public long Height { get; init; }
-
-    public long TimeStamp { get; init; }
-
-    public ulong Nonce { get; init; }
-
-    public double Difficulty { get; init; }
-}
+namespace Infrastructure.Mempool;
 
 public class MempoolService
 {
@@ -40,6 +22,15 @@ public class MempoolService
         var client = _httpClientFactory.CreateClient(HttpClientFactoryName);
         var blocks = await client.GetFromJsonAsync<MempoolBlock[]>("blocks", cancellationToken);
         var res = _mapper.Map<Block[]>(blocks);
+
+        return res;
+    }
+
+    public async Task<HashRateInfo?> GetHashRateInfo(CancellationToken cancellationToken)
+    {
+        var client = _httpClientFactory.CreateClient(HttpClientFactoryName);
+        var blocks = await client.GetFromJsonAsync<MempoolHashRate>("mining/hashrate/3d", cancellationToken);
+        var res = _mapper.Map<HashRateInfo>(blocks);
 
         return res;
     }
