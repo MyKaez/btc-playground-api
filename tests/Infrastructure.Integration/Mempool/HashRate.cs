@@ -1,5 +1,4 @@
-﻿using Domain.Models;
-using Infrastructure.Mempool;
+﻿using Infrastructure.Mempool;
 using Microsoft.Extensions.DependencyInjection;
 using Shared;
 using Xunit;
