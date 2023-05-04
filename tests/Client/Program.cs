@@ -34,13 +34,16 @@ await connection.StartAsync();
 Console.WriteLine("SignalR connection started.");
 
 
-var req2 = new UserRequest { Name = "newa002" };
+var req2 = new UserRequest { Name = "kny" };
+
 await client.PostAsJsonAsync($"https://localhost:5001/sessions/{session.Id}/users", req2);
+await client.PostAsJsonAsync($"https://localhost:5001/sessions/{session.Id}/users", req2 with { Name = "nco" });
+await client.PostAsJsonAsync($"https://localhost:5001/sessions/{session.Id}/users", req2 with { Name = "dan" });
 
 
 while (true)
 {
-    Console.Write("Enter message (or 'exit' to quit): ");
+    Console.WriteLine("Enter message (or 'exit' to quit): ");
     var input = Console.ReadLine();
 
     if (input == "exit")
