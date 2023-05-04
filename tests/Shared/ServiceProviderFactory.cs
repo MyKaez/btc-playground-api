@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Shared;
 
-public class ServiceProviderFactory
+public static class ServiceProviderFactory
 {
     public static IServiceProvider CreateServiceProvider(Action<IServiceCollection, IConfiguration>? servicesFactory = null)
     {
