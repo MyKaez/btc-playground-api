@@ -27,12 +27,22 @@ jobs:
       - name: Publish API
         run: dotnet publish -o ./pub
 
-      - name: Upload Binaries via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+     #- name: Upload Binaries via FTP
+     #  uses: SamKirkland/FTP-Deploy-Action@4.0.0
+     #  with:
+     #    server: btcis.me
+     #    username: ${{ secrets.FTP_USERNAME }}
+     #    password: ${{ secrets.FTP_PASSWORD }}
+     #    server-dir: /
+     #    local-dir: ./pub/
+      
+      - name: IIS Deployment
+        uses: RasmusBuchholdt/simply-web-deploy@2.1.0
         with:
-          server: btcis.me
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /
-          local-dir: ./pub/
-  
+          website-name: api.btcis.me
+          server-computer-name: btcis.me
+          server-username: ${{ secrets.FTP_USERNAME }}
+          server-password: ${{ secrets.FTP_PASSWORD }}
+          source-path: ./pub/
+          target-path: ""
+          target-delete: false
