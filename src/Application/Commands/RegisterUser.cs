@@ -22,18 +22,15 @@ public static class RegisterUser
 
         public override async Task<RequestResult<User>> Handle(Command request, CancellationToken cancellationToken)
         {
-            return await Task.Run(() =>
-            {
-                var session = _sessionService.GetById(request.SessionId);
+            var session = _sessionService.GetById(request.SessionId);
 
-                if (session is null)
-                    return NotFound();
+            if (session is null)
+                return NotFound();
 
-                var user = _userService.Create(session, request.UserName);
-                var res = new RequestResult<User>(user);
+            var user = await _userService.Create(session, request.UserName, cancellationToken);
+            var res = new RequestResult<User>(user);
 
-                return res;
-            }, cancellationToken);
+            return res;
         }
     }
 }

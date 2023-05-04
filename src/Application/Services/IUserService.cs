@@ -4,5 +4,5 @@ namespace Application.Services;
 
 public interface IUserService
 {
-    User Create(Session session, string userName);
+    Task<User> Create(Session session, string userName, CancellationToken cancellationToken);
 }
