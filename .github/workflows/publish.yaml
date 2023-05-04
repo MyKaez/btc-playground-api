@@ -23,6 +23,9 @@ jobs:
 
       - name: Run Tests
         run: dotnet test
+        
+      - name: Publish API
+        run: dotnet publish -o ./pub
 
       - name: Upload Binaries via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
@@ -31,4 +34,4 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /api
-          local-dir: ./bin/Release/net7.0/publish
+          local-dir: ./pub/
