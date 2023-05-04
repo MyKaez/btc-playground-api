@@ -7,9 +7,9 @@ public interface ISessionService
 {
     Session? GetById(Guid id);
 
-    Session? CreateService(string name, JsonElement? configuration);
+    Task<Session?> CreateService(string name, JsonElement? configuration, CancellationToken cancellationToken);
     
-    Session StartSession(Session session);
+    Task<Session> StartSession(Session session, CancellationToken cancellationToken);
     
-    Session StopSession(Session session);
+    Task<Session> StopSession(Session session, CancellationToken cancellationToken);
 }

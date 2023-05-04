@@ -20,25 +20,22 @@ public static class ExecuteSession
 
         public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
         {
-            return await Task.Run(() =>
-            {
-                var session = _sessionService.GetById(request.SessionId);
+            var session = _sessionService.GetById(request.SessionId);
 
-                if (session is null)
-                    return NotFound();
+            if (session is null)
+                return NotFound();
 
-                if (session.ControlId != request.ControlId)
-                    return BadRequest($"The provided control id for the session {request.SessionId} is incorrect.");
+            if (session.ControlId != request.ControlId)
+                return BadRequest($"The provided control id for the session {request.SessionId} is incorrect.");
 
-                if (request.Action == SessionAction.Start)
-                    session = _sessionService.StartSession(session);
-                else if (request.Action == SessionAction.Stop)
-                    session = _sessionService.StopSession(session);
+            if (request.Action == SessionAction.Start)
+                session = await _sessionService.StartSession(session, cancellationToken);
+            else if (request.Action == SessionAction.Stop)
+                session = await _sessionService.StopSession(session, cancellationToken);
 
-                var res = new RequestResult<Session>(session);
+            var res = new RequestResult<Session>(session);
 
-                return res;
-            }, cancellationToken);
+            return res;
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System.Text.Json;
 using Application.Services;
 using Domain.Models;
+using Infrastructure.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Infrastructure.Services;
@@ -8,10 +10,12 @@ namespace Infrastructure.Services;
 public class SessionService : ISessionService
 {
     private readonly IMemoryCache _memoryCache;
+    private readonly IHubContext<SessionHub> _hubContext;
 
-    public SessionService(IMemoryCache memoryCache)
+    public SessionService(IMemoryCache memoryCache, IHubContext<SessionHub> hubContext)
     {
         _memoryCache = memoryCache;
+        _hubContext = hubContext;
     }
 
     public Session? GetById(Guid id)
@@ -19,10 +23,7 @@ public class SessionService : ISessionService
         if (!_memoryCache.TryGetValue<Session>(id, out var session) || session is null)
             return null;
 
-        var options = new MemoryCacheEntryOptions
-        {
-            SlidingExpiration = TimeSpan.FromMinutes(5)
-        };
+        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
 
         session = session with { ExpiresIn = options.SlidingExpiration.Value };
 
@@ -31,7 +32,8 @@ public class SessionService : ISessionService
         return session;
     }
 
-    public Session? CreateService(string name, JsonElement? configuration)
+    public async Task<Session?> CreateService(
+        string name, JsonElement? configuration, CancellationToken cancellationToken)
     {
         var session = new Session
         {
@@ -41,6 +43,10 @@ public class SessionService : ISessionService
             Configuration = configuration
         };
 
+        await _hubContext.Clients.All.SendCoreAsync(
+            session.Id.ToString(), new object[] { "Created session " + name }, cancellationToken
+        );
+
         return _memoryCache.GetOrCreate(session.Id, entry =>
         {
             entry.SlidingExpiration = TimeSpan.FromMinutes(5);
@@ -49,36 +55,36 @@ public class SessionService : ISessionService
         });
     }
 
-    public Session StartSession(Session session)
+    public async Task<Session> StartSession(Session session, CancellationToken cancellationToken)
     {
-        var options = new MemoryCacheEntryOptions
-        {
-            SlidingExpiration = TimeSpan.FromMinutes(5)
-        };
-        
+        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
+
         session = session with
         {
             Status = SessionStatus.Started,
             ExpiresIn = options.SlidingExpiration.Value
         };
 
+        await _hubContext.Clients.All.SendCoreAsync(
+            session.Id.ToString(), new object[] { "Started session " + session.Name }, cancellationToken);
+
         _memoryCache.Set(session.Id, session, options);
 
         return session;
     }
 
-    public Session StopSession(Session session)
+    public async Task<Session> StopSession(Session session, CancellationToken cancellationToken)
     {
-        var options = new MemoryCacheEntryOptions
-        {
-            SlidingExpiration = TimeSpan.FromMinutes(5)
-        };
-        
+        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
+
         session = session with
         {
             Status = SessionStatus.Stopped,
             ExpiresIn = options.SlidingExpiration.Value
         };
+
+        await _hubContext.Clients.All.SendCoreAsync(
+            session.Id.ToString(), new object[] { "Started session " + session.Name }, cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 

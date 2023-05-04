@@ -25,7 +25,7 @@ public class UserService : IUserService
 
         await _hubContext.Clients.All.SendCoreAsync(
             session.Id.ToString(),
-            new[] { "User was created: " + userName },
+            new object[] { "User was created: " + userName },
             cancellationToken);
         _memoryCache.Set(session.Id, newSession.Add(user), options);
 
