@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Service.Hubs;
+namespace Infrastructure.Hubs;
 
+// https://code-maze.com/netcore-signalr-angular-realtime-charts/
+// https://guidnew.com/en/blog/signalr-modules-with-a-shared-connection-using-a-csharp-source-generator/
 public class SessionHub : Hub
 {
     private readonly IMemoryCache _memoryCache;
@@ -20,6 +22,6 @@ public class SessionHub : Hub
         if (session is null)
             return;
 
-        await Clients.Client(sessionId.ToString()).SendAsync("", "");
+        await Clients.Client(sessionId.ToString()).SendAsync("");
     }
 }
