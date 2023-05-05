@@ -43,8 +43,8 @@ public class SessionService : ISessionService
             Configuration = configuration
         };
 
-        await _hubContext.Clients.All.SendCoreAsync(
-            session.Id.ToString(), new object[] { "Created session " + name }, cancellationToken
+        await _hubContext.Clients.All.SendAsync(
+            session.Id.ToString(), "Created session " + name, cancellationToken
         );
 
         return _memoryCache.GetOrCreate(session.Id, entry =>
@@ -65,8 +65,8 @@ public class SessionService : ISessionService
             ExpiresIn = options.SlidingExpiration.Value
         };
 
-        await _hubContext.Clients.All.SendCoreAsync(
-            session.Id.ToString(), new object[] { "Started session " + session.Name }, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(
+            session.Id.ToString(), "Started session " + session.Name, cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 
@@ -83,8 +83,8 @@ public class SessionService : ISessionService
             ExpiresIn = options.SlidingExpiration.Value
         };
 
-        await _hubContext.Clients.All.SendCoreAsync(
-            session.Id.ToString(), new object[] { "Started session " + session.Name }, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(
+            session.Id.ToString(), "Started session " + session.Name, cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 

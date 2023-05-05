@@ -26,6 +26,6 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHub<SessionHub>("/session-hub");
+app.MapHub<SessionHub>("/v1/sessions");
 
 app.Run();

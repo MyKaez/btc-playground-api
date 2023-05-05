@@ -9,7 +9,7 @@ using Service.Models.Requests;
 
 namespace Service.Controllers;
 
-[Route("sessions")]
+[Route("v1/sessions")]
 public class SessionController : BaseController
 {
     private readonly IMediator _mediator;

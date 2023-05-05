@@ -15,13 +15,13 @@ public class SessionHub : Hub
         _memoryCache = memoryCache;
     }
 
-    public async Task SendMessage(Guid sessionId)
+    public async Task SendMessage(Guid sessionId, string message)
     {
         var session =_memoryCache.Get<Session>(sessionId);
 
         if (session is null)
             return;
 
-        await Clients.Client(sessionId.ToString()).SendAsync("");
+        await Clients.All.SendAsync(sessionId.ToString(), message);
     }
 }

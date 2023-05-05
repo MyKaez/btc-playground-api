@@ -23,10 +23,9 @@ public class UserService : IUserService
         var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
         var newSession = session with { ExpiresIn = options.SlidingExpiration.Value };
 
-        await _hubContext.Clients.All.SendCoreAsync(
-            session.Id.ToString(),
-            new object[] { "User was created: " + userName },
-            cancellationToken);
+        await _hubContext.Clients.All.SendAsync(
+            session.Id.ToString(), "User was created: " + userName, cancellationToken);
+
         _memoryCache.Set(session.Id, newSession.Add(user), options);
 
         return user;
