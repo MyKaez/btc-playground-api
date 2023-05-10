@@ -10,7 +10,7 @@ public static class Defaults
         Options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     }
 
-    public static JsonSerializerOptions Options = new()
+    public static JsonSerializerOptions Options { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };

@@ -17,7 +17,7 @@ public static class HttpClientExtensions
         return session;
     }
 
-    public static async Task<User> CreateUser(this HttpClient client, Session session, string userName)
+    public static async Task<User> CreateUser(this HttpClient client, Session session, string userName= "Sarah")
     {
         var req = new UserRequest { Name = userName };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users", req);

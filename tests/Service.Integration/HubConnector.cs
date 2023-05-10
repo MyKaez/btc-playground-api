@@ -4,12 +4,11 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.TestHost;
 using Service.Integration.Models;
 
-namespace Service.Integration.SingnalR;
+namespace Service.Integration;
 
 public class HubConnector
 {
     private readonly IHubConnectionBuilder _hubConnectionBuilder;
-    private readonly BlockingCollection<string> _messages = new();
 
     public HubConnector(TestServer testServer)
     {
@@ -17,7 +16,6 @@ public class HubConnector
             .WithUrl(testServer.BaseAddress + "v1/sessions", o =>
             {
                 o.Transports = HttpTransportType.WebSockets;
-                o.AccessTokenProvider = async () => await Task.FromResult("");
                 o.SkipNegotiation = true;
                 o.HttpMessageHandlerFactory = _ => testServer.CreateHandler();
                 o.WebSocketFactory = async (context, cancellationToken) =>
@@ -30,16 +28,16 @@ public class HubConnector
             });
     }
 
-    public IEnumerable<string> Messages => _messages;
-
-    public async Task<HubConnection> CreateConnection(Session session)
+    public async Task<TestHub> CreateConnection(
+        Session session)
     {
         var connection = _hubConnectionBuilder.Build();
+        var messages = new BlockingCollection<string>();
 
-        connection.On<string>(session.Id.ToString(), message => _messages.Add(message));
+        connection.On<string>(session.Id.ToString(), message => messages.Add(message));
 
         await connection.StartAsync();
 
-        return connection;
+        return new TestHub(connection, messages);
     }
 }
