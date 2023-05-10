@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using Application.Extensions;
 using Application.Services;
 using Domain.Models;
 using Infrastructure.Hubs;
@@ -85,6 +86,24 @@ public class SessionService : ISessionService
 
         await _hubContext.Clients.All.SendAsync(
             session.Id.ToString(), "Started session " + session.Name, cancellationToken);
+
+        _memoryCache.Set(session.Id, session, options);
+
+        return session;
+    }
+
+    public async Task<Session> NotifySession(Session session, IReadOnlyDictionary<string, object> data, CancellationToken cancellationToken)
+    {
+        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
+
+        session = session with
+        {
+            Status = SessionStatus.Stopped,
+            ExpiresIn = options.SlidingExpiration.Value
+        };
+
+        await _hubContext.Clients.All.SendAsync(
+            session.Id.ToString(), "Session: " + data.JoinToString(), cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 

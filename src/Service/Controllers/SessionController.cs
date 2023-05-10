@@ -43,7 +43,10 @@ public class SessionController : BaseController
     public async Task<IActionResult> Post(Guid sessionId, [FromBody] SessionActionRequest request)
     {
         var sessionAction = _mapper.Map<SessionAction>(request.Action);
-        var cmd = new ExecuteSessionAction.Command(sessionId, request.ControlId, sessionAction);
+        var cmd = new ExecuteSessionAction.Command(sessionId, request.ControlId, sessionAction)
+        {
+            Data = request.Data
+        };
         var res = await _mediator.Send(cmd);
 
         return Result(res, session => _mapper.Map<SessionDto>(session));

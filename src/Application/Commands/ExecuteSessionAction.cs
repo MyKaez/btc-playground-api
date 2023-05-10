@@ -7,7 +7,10 @@ namespace Application.Commands;
 
 public static class ExecuteSessionAction
 {
-    public record Command(Guid SessionId, Guid ControlId, SessionAction Action) : Request<Session>;
+    public record Command(Guid SessionId, Guid ControlId, SessionAction Action) : Request<Session>
+    {
+        public IReadOnlyDictionary<string, object> Data { get; init; } = new Dictionary<string, object>();
+    }
 
     public class Handler : RequestHandler<Command, Session>
     {
@@ -28,10 +31,13 @@ public static class ExecuteSessionAction
             if (session.ControlId != request.ControlId)
                 return BadRequest($"The provided control id for the session {request.SessionId} is incorrect.");
 
-            if (request.Action == SessionAction.Start)
-                session = await _sessionService.StartSession(session, cancellationToken);
-            else if (request.Action == SessionAction.Stop)
-                session = await _sessionService.StopSession(session, cancellationToken);
+            session = request.Action switch
+            {
+                SessionAction.Start => await _sessionService.StartSession(session, cancellationToken),
+                SessionAction.Stop => await _sessionService.StopSession(session, cancellationToken),
+                SessionAction.Notify => await _sessionService.NotifySession(session, request.Data, cancellationToken),
+                _ => throw new NotSupportedException($"Cannot handle action '{request.Action}'")
+            };
 
             var res = new RequestResult<Session>(session);
 

@@ -12,4 +12,7 @@ public interface ISessionService
     Task<Session> StartSession(Session session, CancellationToken cancellationToken);
     
     Task<Session> StopSession(Session session, CancellationToken cancellationToken);
+
+    Task<Session> NotifySession(Session session, IReadOnlyDictionary<string, object> data,
+        CancellationToken cancellationToken);
 }

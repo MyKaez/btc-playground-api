@@ -3,5 +3,6 @@
 public enum SessionAction
 {
     Start, 
-    Stop
+    Stop, 
+    Notify
 }

@@ -1,4 +1,5 @@
-﻿using Application.Services;
+﻿using Application.Extensions;
+using Application.Services;
 using Domain.Models;
 using Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
@@ -39,12 +40,12 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task Execute(Session session, User user, Dictionary<string, object> data,
-        CancellationToken cancellationToken)
+    public async Task Execute(
+        Session session, User user, IReadOnlyDictionary<string, object> data, CancellationToken cancellationToken)
     {
         await _hubContext.Clients.All.SendAsync(
             session.Id.ToString(),
-            $"{user.Name} sent this data: {data}",
+            $"{user.Name} sent this data: {data.JoinToString()}",
             cancellationToken
         );
     }

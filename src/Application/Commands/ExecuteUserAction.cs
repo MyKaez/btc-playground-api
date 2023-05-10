@@ -33,7 +33,7 @@ public static class ExecuteUserAction
                 return NotFound();
 
             await _userService.Execute(session, user, request.Data, cancellationToken);
-            
+
             var res = new RequestResult<User>(user);
 
             return res;
