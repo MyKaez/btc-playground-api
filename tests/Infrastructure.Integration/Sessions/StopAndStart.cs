@@ -43,7 +43,7 @@ public class StopAndStart
 
     private async Task<SessionStatus> StartSession(Guid sessionId, Guid controlId)
     {
-        var command = new ExecuteSession.Command(sessionId, controlId, SessionAction.Start);
+        var command = new ExecuteSessionAction.Command(sessionId, controlId, SessionAction.Start);
         var res = await _mediator.Send(command);
 
         Assert.NotNull(res.Result);
@@ -54,7 +54,7 @@ public class StopAndStart
 
     private async Task<SessionStatus> StopSession(Guid sessionId, Guid controlId)
     {
-        var command = new ExecuteSession.Command(sessionId, controlId, SessionAction.Stop);
+        var command = new ExecuteSessionAction.Command(sessionId, controlId, SessionAction.Stop);
         var res = await _mediator.Send(command);
 
         Assert.NotNull(res.Result);

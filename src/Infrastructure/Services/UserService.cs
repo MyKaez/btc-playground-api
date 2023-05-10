@@ -17,6 +17,11 @@ public class UserService : IUserService
         _hubContext = hubContext;
     }
 
+    public User? GetById(Session session, Guid userId)
+    {
+        return session.Users.FirstOrDefault(user => user.Id == userId);
+    }
+
     public async Task<User> Create(Session session, string userName, CancellationToken cancellationToken)
     {
         var user = new User { Id = Guid.NewGuid(), Name = userName };
@@ -24,10 +29,23 @@ public class UserService : IUserService
         var newSession = session with { ExpiresIn = options.SlidingExpiration.Value };
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), "User was created: " + userName, cancellationToken);
+            session.Id.ToString(),
+            "User was created: " + userName,
+            cancellationToken
+        );
 
         _memoryCache.Set(session.Id, newSession.Add(user), options);
 
         return user;
+    }
+
+    public async Task Execute(Session session, User user, Dictionary<string, object> data,
+        CancellationToken cancellationToken)
+    {
+        await _hubContext.Clients.All.SendAsync(
+            session.Id.ToString(),
+            $"{user.Name} sent this data: {data}",
+            cancellationToken
+        );
     }
 }

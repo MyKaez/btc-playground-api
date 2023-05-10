@@ -5,7 +5,7 @@ using Domain.Models;
 
 namespace Application.Commands;
 
-public static class ExecuteSession
+public static class ExecuteSessionAction
 {
     public record Command(Guid SessionId, Guid ControlId, SessionAction Action) : Request<Session>;
 
