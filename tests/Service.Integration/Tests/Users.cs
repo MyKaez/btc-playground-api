@@ -26,11 +26,7 @@ public class Users
     {
         var session = await _client.CreateSession();
         var (connection, messages) = await CreateHub(session);
-        var data = new Dictionary<string, object>
-        {
-            { "completed", true },
-            { "foundHash", Guid.Empty.ToString("N") + Guid.NewGuid().ToString("N") }
-        };
+        var data = GetData();
 
         await _client.ExecuteSessionNotification(session, data);
         await connection.DisposeAsync();
@@ -44,11 +40,7 @@ public class Users
         var session = await _client.CreateSession();
         var (connection, messages) = await CreateHub(session);
         var user = await _client.CreateUser(session);
-        var data = new Dictionary<string, object>
-        {
-            { "completed", true },
-            { "foundHash", Guid.Empty.ToString("N") + Guid.NewGuid().ToString("N") }
-        };
+        var data = GetData();
         
         await _client.ExecuteUserAction(session, user, data);
         await connection.DisposeAsync();
@@ -63,5 +55,15 @@ public class Users
         var hub = await hubConnector.CreateConnection(session);
 
         return hub;
+    }
+
+    private static IReadOnlyDictionary<string, object> GetData()
+    {
+        var data = new Dictionary<string, object>
+        {
+            { "completed", true },
+            { "foundHash", Guid.Empty.ToString("N") + Guid.NewGuid().ToString("N") }
+        };
+        return data;
     }
 }
