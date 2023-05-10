@@ -7,7 +7,8 @@ namespace Shared;
 
 public static class ServiceProviderFactory
 {
-    public static IServiceProvider CreateServiceProvider(Action<IServiceCollection, IConfiguration>? servicesFactory = null)
+    public static IServiceProvider CreateServiceProvider(
+        Action<IServiceCollection, IConfiguration>? servicesFactory = null)
     {
         var (services, config) = CreateInjection();
 
@@ -22,6 +23,8 @@ public static class ServiceProviderFactory
         var config = CreateConfig();
 
         InfrastructureInstaller.Install(services, config);
+
+        services.AddSingleton(new HttpClientFactory(services));
 
         return (services, config);
     }

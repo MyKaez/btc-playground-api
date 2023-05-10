@@ -5,13 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Shared;
 using Xunit;
 
-namespace Infrastructure.Integration;
+namespace Infrastructure.Integration.Sessions;
 
-public class Sessions
+public class StopAndStart
 {
     private readonly IMediator _mediator;
 
-    public Sessions()
+    public StopAndStart()
     {
         var provider = ServiceProviderFactory.CreateServiceProvider();
 
