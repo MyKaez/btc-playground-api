@@ -6,5 +6,5 @@ public class SessionActionRequest
 
     public SessionActionDto Action { get; init; }
 
-    public IReadOnlyDictionary<string, object> Data { get; init; }
+    public IReadOnlyDictionary<string, object> Data { get; init; } = new Dictionary<string, object>();
 }
