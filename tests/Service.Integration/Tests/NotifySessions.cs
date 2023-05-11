@@ -6,12 +6,12 @@ using Shared;
 
 namespace Service.Integration.Tests;
 
-public class Sessions
+public class NotifySessions
 {
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
 
-    public Sessions()
+    public NotifySessions()
     {
         var provider = ServiceProviderFactory.CreateServiceProvider();
         var httpClientFactory = provider.GetRequiredService<HttpClientFactory>();
@@ -24,7 +24,7 @@ public class Sessions
     public async Task MultipleUsers_NotifyAboutCreatedUsers()
     {
         var session = await _client.CreateSession();
-        var (connection, messages) = await CreateHub(session);
+        var (connection, messages) = await _testServer.CreateHub(session);
         var users = new[]
         {
             await _client.CreateUser(session, "Kenny"),
@@ -44,9 +44,9 @@ public class Sessions
         var session = await _client.CreateSession();
         var hubs = new[]
         {
-            await CreateHub(session),
-            await CreateHub(session),
-            await CreateHub(session)
+            await _testServer.CreateHub(session),
+            await _testServer.CreateHub(session),
+            await _testServer.CreateHub(session)
         };
         var user = await _client.CreateUser(session);
 
@@ -60,14 +60,6 @@ public class Sessions
         }
     }
 
-    private async Task<TestHub> CreateHub(Session session)
-    {
-        var hubConnector = new HubConnector(_testServer);
-        var hub = await hubConnector.CreateConnection(session);
-
-        return hub;
-    }
-    
     private static async Task<bool> FoundMessages(
         IReadOnlyCollection<string> messages, params User[] users)
     {

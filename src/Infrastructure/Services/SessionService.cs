@@ -67,7 +67,7 @@ public class SessionService : ISessionService
         };
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), "Started session " + session.Name, cancellationToken);
+            session.Id.ToString(), $"Started session '{session.Name}'", cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 
@@ -85,14 +85,15 @@ public class SessionService : ISessionService
         };
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), "Started session " + session.Name, cancellationToken);
+            session.Id.ToString(), $"Stopped session '{session.Name}'", cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 
         return session;
     }
 
-    public async Task<Session> NotifySession(Session session, IReadOnlyDictionary<string, object> data, CancellationToken cancellationToken)
+    public async Task<Session> NotifySession(Session session, IReadOnlyDictionary<string, object> data,
+        CancellationToken cancellationToken)
     {
         var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
 

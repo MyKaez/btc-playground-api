@@ -2,17 +2,16 @@
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Integration.Extensions;
-using Service.Integration.Models;
 using Shared;
 
 namespace Service.Integration.Tests;
 
-public class Users
+public class NotifyUsers
 {
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
 
-    public Users()
+    public NotifyUsers()
     {
         var provider = ServiceProviderFactory.CreateServiceProvider();
         var httpClientFactory = provider.GetRequiredService<HttpClientFactory>();
@@ -25,10 +24,10 @@ public class Users
     public async Task SessionSendsData_DataGetsShared()
     {
         var session = await _client.CreateSession();
-        var (connection, messages) = await CreateHub(session);
+        var (connection, messages) = await _testServer.CreateHub(session);
         var data = GetData();
 
-        await _client.ExecuteSessionNotification(session, data);
+        await _client.NotifySession(session, data);
         await connection.DisposeAsync();
         
         Assert.Contains(messages, msg => msg.Contains(data.JoinToString()));
@@ -38,7 +37,7 @@ public class Users
     public async Task UserSendsData_DataGetsShared()
     {
         var session = await _client.CreateSession();
-        var (connection, messages) = await CreateHub(session);
+        var (connection, messages) = await _testServer.CreateHub(session);
         var user = await _client.CreateUser(session);
         var data = GetData();
         
@@ -47,14 +46,6 @@ public class Users
 
         Assert.Contains(messages, msg => msg.Contains(user.Name));
         Assert.Contains(messages, msg => msg.Contains(data.JoinToString()));
-    }
-
-    private async Task<TestHub> CreateHub(Session session)
-    {
-        var hubConnector = new HubConnector(_testServer);
-        var hub = await hubConnector.CreateConnection(session);
-
-        return hub;
     }
 
     private static IReadOnlyDictionary<string, object> GetData()

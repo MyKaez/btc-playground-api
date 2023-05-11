@@ -1,8 +1,10 @@
-﻿namespace Service.Integration.Models;
+﻿using Domain.Models;
+
+namespace Service.Integration.Models;
 
 public record Session
 {
     public Guid Id { get; set; }
     
-    public Guid ControlId { get; set; }
+    public SessionStatus Status { get; set; }
 }

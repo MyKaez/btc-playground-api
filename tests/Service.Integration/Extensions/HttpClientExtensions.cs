@@ -6,11 +6,11 @@ namespace Service.Integration.Extensions;
 
 public static class HttpClientExtensions
 {
-    public static async Task<Session> CreateSession(this HttpClient client)
+    public static async Task<SessionControl> CreateSession(this HttpClient client)
     {
         var req = new SessionRequest { Name = "This is some super nice testing session" };
         var res = await client.PostAsJsonAsync("v1/sessions", req);
-        var session = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
+        var session = await res.Content.ReadFromJsonAsync<SessionControl>(Defaults.Options);
 
         Assert.NotNull(session);
 
@@ -28,14 +28,44 @@ public static class HttpClientExtensions
         return user;
     }
 
-    public static async Task<Session> ExecuteSessionNotification(
-        this HttpClient client, Session session, IReadOnlyDictionary<string, object> data)
+    public static async Task<Session> NotifySession(
+        this HttpClient client, SessionControl session, IReadOnlyDictionary<string, object> data)
     {
         var req = new SessionActionRequest
         {
             ControlId = session.ControlId,
             Action = SessionActionDto.Notify,
             Data = data
+        };
+        var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
+        var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
+
+        Assert.NotNull(reSession);
+
+        return reSession;
+    }
+
+    public static async Task<Session> StartSession(this HttpClient client, SessionControl session)
+    {
+        var req = new SessionActionRequest
+        {
+            ControlId = session.ControlId,
+            Action = SessionActionDto.Start
+        };
+        var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
+        var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
+
+        Assert.NotNull(reSession);
+
+        return reSession;
+    }
+    
+    public static async Task<Session> StopSession(this HttpClient client, SessionControl session)
+    {
+        var req = new SessionActionRequest
+        {
+            ControlId = session.ControlId,
+            Action = SessionActionDto.Stop
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
         var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
