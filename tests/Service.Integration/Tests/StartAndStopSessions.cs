@@ -21,7 +21,7 @@ public class StartAndStopSessions
     }
 
     [Fact]
-    public async Task Execute()
+    public async Task OneConnection_StatusUpdateIsSent()
     {
         var session = await _client.CreateSession();
         var (connection, messages) = await _testServer.CreateHub(session);
@@ -39,5 +39,29 @@ public class StartAndStopSessions
         Assert.Equal(2, messages.Count);
         Assert.Contains(messages, val => val.Contains("Started"));
         Assert.Contains(messages, val => val.Contains("Stopped"));
+    }
+
+    [Fact]
+    public async Task MultipleConnections_StatusUpdateIsSent()
+    {
+        var session = await _client.CreateSession();
+        var hubs = new[]
+        {
+            await _testServer.CreateHub(session),
+            await _testServer.CreateHub(session),
+            await _testServer.CreateHub(session)
+        };
+        
+        await _client.StartSession(session);
+        await _client.StopSession(session);
+
+        foreach (var (connection, messages) in hubs)
+        {
+            await connection.DisposeAsync();
+            
+            Assert.Equal(2, messages.Count);
+            Assert.Contains(messages, val => val.Contains("Started"));
+            Assert.Contains(messages, val => val.Contains("Stopped"));
+        }
     }
 }
