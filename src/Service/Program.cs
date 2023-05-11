@@ -5,6 +5,14 @@ using Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyHeader()
+            .AllowAnyMethod()
+            .WithOrigins("http://localhost:4200", "https://btcis.me", "https://fixesth.is")
+            .AllowCredentials()
+    )
+);
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -12,7 +20,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
     });
 builder.Services.AddSignalR();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
@@ -24,7 +31,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
-app.UseCors(b => b.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+app.UseRouting();
+app.UseCors();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<SessionHub>("/v1/sessions");
