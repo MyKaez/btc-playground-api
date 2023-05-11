@@ -3,8 +3,14 @@ using System.Text.Json.Serialization;
 using Infrastructure;
 using Infrastructure.Hubs;
 
+const string cors = "MyCorsPolicy";
+
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(cors, policy => policy.AllowAnyHeader().WithMethods().AllowAnyOrigin());
+});
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -21,6 +27,7 @@ InfrastructureInstaller.Install(builder.Services, builder.Configuration);
 
 var app = builder.Build();
 
+app.UseCors(cors);
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
