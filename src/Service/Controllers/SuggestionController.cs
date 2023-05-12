@@ -6,7 +6,7 @@ using Service.Models;
 
 namespace Service.Controllers;
 
-[Microsoft.AspNetCore.Components.Route("v1/suggestions")]
+[Route("v1/suggestions")]
 public class SuggestionController : BaseController
 {
     private readonly IMapper _mapper;
