@@ -104,7 +104,6 @@ public class SessionService : ISessionService
 
         session = session with
         {
-            Status = SessionStatus.Stopped,
             ExpiresIn = options.SlidingExpiration.Value
         };
 
