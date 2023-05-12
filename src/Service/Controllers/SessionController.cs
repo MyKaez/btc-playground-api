@@ -30,6 +30,15 @@ public class SessionController : BaseController
         return Result(res, session => _mapper.Map<SessionDto[]>(session));
     }
 
+    [HttpGet("suggestions")]
+    public async Task<IActionResult> GetSuggestion()
+    {
+        var query = new GetSessionSuggestion.Query();
+        var res = await _mediator.Send(query);
+
+        return Result(res, suggestion => _mapper.Map<SessionSuggestionDto>(suggestion));
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {

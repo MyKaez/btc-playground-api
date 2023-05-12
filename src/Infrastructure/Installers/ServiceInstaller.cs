@@ -14,5 +14,6 @@ public class ServiceInstaller : IInstaller
         services.AddTransient<IPriceService, PriceService>();
         services.AddTransient<ISessionService, SessionService>();
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<ISuggestionService, SuggestionService>();
     }
 }
