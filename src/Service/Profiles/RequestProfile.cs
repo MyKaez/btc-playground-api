@@ -4,7 +4,7 @@ using Service.Models.Requests;
 
 namespace Service.Profiles;
 
-public class RequestProfile:Profile
+public class RequestProfile : Profile
 {
     public RequestProfile()
     {
