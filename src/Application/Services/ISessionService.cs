@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using Domain.Models;
 
 namespace Application.Services;
@@ -15,6 +16,5 @@ public interface ISessionService
     
     Task<Session> StopSession(Session session, CancellationToken cancellationToken);
 
-    Task<Session> NotifySession(Session session, IReadOnlyDictionary<string, object> data,
-        CancellationToken cancellationToken);
+    Task<Session> NotifySession(Session session, JsonNode data, CancellationToken cancellationToken);
 }

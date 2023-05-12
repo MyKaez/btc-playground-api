@@ -1,4 +1,6 @@
-﻿namespace Service.Models.Requests;
+﻿using System.Text.Json.Nodes;
+
+namespace Service.Models.Requests;
 
 public class SessionActionRequest
 {
@@ -6,5 +8,5 @@ public class SessionActionRequest
 
     public SessionActionDto Action { get; init; }
 
-    public IReadOnlyDictionary<string, object> Data { get; init; } = new Dictionary<string, object>();
+    public JsonNode? Data { get; init; }
 }

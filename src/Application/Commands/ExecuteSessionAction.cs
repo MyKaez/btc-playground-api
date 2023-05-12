@@ -1,4 +1,5 @@
-﻿using Application.Handlers;
+﻿using System.Text.Json.Nodes;
+using Application.Handlers;
 using Application.Models;
 using Application.Services;
 using Domain.Models;
@@ -9,7 +10,7 @@ public static class ExecuteSessionAction
 {
     public record Command(Guid SessionId, Guid ControlId, SessionAction Action) : Request<Session>
     {
-        public IReadOnlyDictionary<string, object> Data { get; init; } = new Dictionary<string, object>();
+        public JsonNode? Data { get; init; }
     }
 
     public class Handler : RequestHandler<Command, Session>
@@ -35,7 +36,7 @@ public static class ExecuteSessionAction
             {
                 SessionAction.Start => await _sessionService.StartSession(session, cancellationToken),
                 SessionAction.Stop => await _sessionService.StopSession(session, cancellationToken),
-                SessionAction.Notify => await _sessionService.NotifySession(session, request.Data, cancellationToken),
+                SessionAction.Notify => await _sessionService.NotifySession(session, request.Data!, cancellationToken),
                 _ => throw new NotSupportedException($"Cannot handle action '{request.Action}'")
             };
 
