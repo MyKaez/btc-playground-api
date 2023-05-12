@@ -75,8 +75,12 @@ public static class HttpClientExtensions
         return reSession;
     }
 
-    public static async Task<User> ExecuteUserAction(this HttpClient client, Session session, User user, JsonNode req)
+    public static async Task<User> ExecuteUserAction(this HttpClient client, Session session, User user, JsonNode data)
     {
+        var req = new UserActionRequest
+        {
+            Data = data
+        };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{user.Id}/actions", req);
         var resUser = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);
 
