@@ -19,6 +19,11 @@ public class SessionService : ISessionService
         _hubContext = hubContext;
     }
 
+    public IEnumerable<Session> GetAll()
+    {
+        return Array.Empty<Session>();
+    }
+
     public Session? GetById(Guid id)
     {
         if (!_memoryCache.TryGetValue<Session>(id, out var session) || session is null)

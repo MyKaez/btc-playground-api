@@ -21,6 +21,15 @@ public class SessionController : BaseController
         _mapper = mapper;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Get()
+    {
+        var query = new GetSessions.Query();
+        var res = await _mediator.Send(query);
+
+        return Result(res, session => _mapper.Map<SessionDto[]>(session));
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id)
     {

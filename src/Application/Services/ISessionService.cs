@@ -5,6 +5,8 @@ namespace Application.Services;
 
 public interface ISessionService
 {
+    IEnumerable<Session> GetAll();
+    
     Session? GetById(Guid id);
 
     Task<Session?> CreateService(string name, JsonElement? configuration, CancellationToken cancellationToken);
