@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Nodes;
-using Application.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Integration.Extensions;
