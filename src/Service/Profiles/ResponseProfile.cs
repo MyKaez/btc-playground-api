@@ -23,5 +23,6 @@ public class ResponseProfile : Profile
         CreateMap<SessionStatus, SessionStatusDto>();
         CreateMap<SessionSuggestion, SessionSuggestionDto>();
         CreateMap<User, UserDto>();
+        CreateMap<UserSuggestion, UserSuggestionDto>();
     }
 }

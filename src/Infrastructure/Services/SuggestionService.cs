@@ -15,6 +15,11 @@ public class SuggestionService : ISuggestionService
 
     public SessionSuggestion GetSessionSuggestion()
     {
-        return new SessionSuggestion { Name = _faker.Commerce.ProductName() };
+        return new SessionSuggestion(_faker.Commerce.ProductName());
+    }
+
+    public UserSuggestion GetUserSuggestion()
+    {
+        return new UserSuggestion(_faker.Name.FullName());
     }
 }
