@@ -6,7 +6,6 @@ using Service.Models;
 
 namespace Service.Controllers;
 
-[Route("v1/suggestions")]
 public class SuggestionController : BaseController
 {
     private readonly IMapper _mapper;
@@ -18,7 +17,7 @@ public class SuggestionController : BaseController
         _mediator = mediator;
     }
 
-    [HttpGet("sessions")]
+    [HttpGet("v1/suggestions/sessions")]
     public async Task<IActionResult> GetSession()
     {
         var query = new GetSessionSuggestion.Query();
@@ -27,7 +26,7 @@ public class SuggestionController : BaseController
         return Result(res, suggestion => _mapper.Map<SessionSuggestionDto>(suggestion));
     }
 
-    [HttpGet("users")]
+    [HttpGet("v1/suggestions/users")]
     public async Task<IActionResult> GetUser()
     {
         var query = new GetUserSuggestion.Query();
