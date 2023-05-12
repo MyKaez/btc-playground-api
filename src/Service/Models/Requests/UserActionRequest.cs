@@ -1,5 +1,8 @@
-﻿namespace Service.Models.Requests;
+﻿using System.Text.Json.Nodes;
 
-public class UserActionRequest : Dictionary<string, object>
+namespace Service.Models.Requests;
+
+public class UserActionRequest
 {
+    public JsonNode Data { get; init; } = new JsonObject();
 }

@@ -1,4 +1,5 @@
-﻿using Application.Extensions;
+﻿using System.Text.Json.Nodes;
+using Application.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Integration.Extensions;
@@ -30,7 +31,7 @@ public class NotifyUsers
         await _client.NotifySession(session, data);
         await connection.DisposeAsync();
         
-        Assert.Contains(messages, msg => msg.Contains(data.JoinToString()));
+        Assert.Contains(messages, msg => msg.Contains(data.ToString()));
     }
 
     [Fact]
@@ -45,12 +46,12 @@ public class NotifyUsers
         await connection.DisposeAsync();
 
         Assert.Contains(messages, msg => msg.Contains(user.Name));
-        Assert.Contains(messages, msg => msg.Contains(data.JoinToString()));
+        Assert.Contains(messages, msg => msg.Contains(data.ToString()));
     }
 
-    private static IReadOnlyDictionary<string, object> GetData()
+    private static JsonNode GetData()
     {
-        var data = new Dictionary<string, object>
+        var data =new JsonObject
         {
             { "completed", true },
             { "foundHash", Guid.Empty.ToString("N") + Guid.NewGuid().ToString("N") }

@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using Service.Integration.Models;
 using Service.Models.Requests;
 
@@ -28,8 +29,7 @@ public static class HttpClientExtensions
         return user;
     }
 
-    public static async Task<Session> NotifySession(
-        this HttpClient client, SessionControl session, IReadOnlyDictionary<string, object> data)
+    public static async Task<Session> NotifySession(this HttpClient client, SessionControl session, JsonNode data)
     {
         var req = new SessionActionRequest
         {
@@ -75,8 +75,7 @@ public static class HttpClientExtensions
         return reSession;
     }
 
-    public static async Task<User> ExecuteUserAction(
-        this HttpClient client, Session session, User user, IReadOnlyDictionary<string, object> req)
+    public static async Task<User> ExecuteUserAction(this HttpClient client, Session session, User user, JsonNode req)
     {
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{user.Id}/actions", req);
         var resUser = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);

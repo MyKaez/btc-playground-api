@@ -1,4 +1,5 @@
-﻿using Application.Handlers;
+﻿using System.Text.Json.Nodes;
+using Application.Handlers;
 using Application.Models;
 using Application.Services;
 using Domain.Models;
@@ -7,7 +8,7 @@ namespace Application.Commands;
 
 public static class ExecuteUserAction
 {
-    public record Command(Guid SessionId, Guid UserId, Dictionary<string, object> Data) : Request<User>;
+    public record Command(Guid SessionId, Guid UserId, JsonNode Data) : Request<User>;
 
     public class Handler : RequestHandler<Command, User>
     {

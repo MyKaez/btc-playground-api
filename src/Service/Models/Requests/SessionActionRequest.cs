@@ -8,5 +8,5 @@ public class SessionActionRequest
 
     public SessionActionDto Action { get; init; }
 
-    public JsonNode? Data { get; init; }
+    public JsonNode Data { get; init; } = new JsonObject();
 }
