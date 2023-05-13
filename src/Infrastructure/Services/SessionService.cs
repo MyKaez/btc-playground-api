@@ -50,7 +50,7 @@ public class SessionService : ISessionService
         };
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), "Created session " + name, cancellationToken
+            session.Id.ToString(), new { session.Id, session.Status }, cancellationToken
         );
 
         return _memoryCache.GetOrCreate(session.Id, entry =>
@@ -72,7 +72,7 @@ public class SessionService : ISessionService
         };
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), $"Started session '{session.Name}'", cancellationToken);
+            session.Id.ToString(), new { session.Id, session.Status }, cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 
@@ -90,7 +90,7 @@ public class SessionService : ISessionService
         };
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), $"Stopped session '{session.Name}'", cancellationToken);
+            session.Id.ToString(), new { session.Id, session.Status }, cancellationToken);
 
         _memoryCache.Set(session.Id, session, options);
 
