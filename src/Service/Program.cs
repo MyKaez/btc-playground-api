@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
         policy.AllowAnyHeader()
             .AllowAnyMethod()
-            .WithOrigins("http://localhost:4200", "https://btcis.me", "https://fixesth.is")
+            .WithOrigins("http://localhost:4200", "http://localhost:8100", "https://btcis.me", "https://fixesth.is")
             .AllowCredentials()
     )
 );
