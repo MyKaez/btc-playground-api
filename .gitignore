@@ -12,6 +12,7 @@ bin
 obj
 packages
 publish
+con_string.txt
 
 # dependencies
 /node_modules

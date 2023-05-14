@@ -16,6 +16,11 @@ public class EntityFrameworkInstaller : IInstaller
             throw new NotSupportedException(
                 "The provided Connection argument ('Default') results in an empty connection string");
 
+        const string x = "$$_CONNECTION_STRING_$$";
+
+        if (connectionString == x)
+            connectionString = File.ReadAllText(@"con_string.txt");
+
         services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
     }
 }
