@@ -21,7 +21,7 @@ public static class RegisterSession
 
         public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var session = await _sessionService.CreateService(request.Name, request.Configuration, cancellationToken);
+            var session = await _sessionService.CreateSession(request.Name, request.Configuration, cancellationToken);
 
             if (session is null)
                 return NotFound();

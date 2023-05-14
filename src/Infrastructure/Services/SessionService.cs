@@ -1,114 +1,110 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using Application.Services;
+using AutoMapper;
 using Domain.Models;
+using Infrastructure.Database;
 using Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
+using Session = Domain.Models.Session;
 
 namespace Infrastructure.Services;
 
 public class SessionService : ISessionService
 {
-    private readonly IMemoryCache _memoryCache;
+    private readonly DatabaseContext _databaseContext;
+    private readonly IMapper _mapper;
     private readonly IHubContext<SessionHub> _hubContext;
 
-    public SessionService(IMemoryCache memoryCache, IHubContext<SessionHub> hubContext)
+    public SessionService(DatabaseContext databaseContext, IMapper mapper, IHubContext<SessionHub> hubContext)
     {
-        _memoryCache = memoryCache;
+        _databaseContext = databaseContext;
+        _mapper = mapper;
         _hubContext = hubContext;
     }
 
     public IEnumerable<Session> GetAll()
     {
-        return Array.Empty<Session>();
+        var entities = _databaseContext.Sessions;
+        var sessions = _mapper.Map<Session[]>(entities);
+
+        return sessions;
     }
 
     public Session? GetById(Guid id)
     {
-        if (!_memoryCache.TryGetValue<Session>(id, out var session) || session is null)
-            return null;
-
-        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
-
-        session = session with { ExpiresIn = options.SlidingExpiration.Value };
-
-        _memoryCache.Set(id, session, options);
+        var entity = _databaseContext.Find<Database.Session>(id);
+        var session = _mapper.Map<Session>(entity);
 
         return session;
     }
 
-    public async Task<Session?> CreateService(
+    public async Task<Session?> CreateSession(
         string name, JsonElement? configuration, CancellationToken cancellationToken)
     {
-        var session = new Session
+        var entity = new Database.Session
         {
             Id = Guid.NewGuid(),
             ControlId = Guid.NewGuid(),
+            Status = SessionStatus.NotStarted.ToString(),
             Name = name,
-            Configuration = configuration
+            Configuration = configuration?.ToString(),
+            Created = DateTime.Now,
+            Updated = DateTime.Now,
+            ExpiresAt = DateTime.Now.AddMinutes(10)
         };
 
+        _databaseContext.Sessions.Add(entity);
+
+        var session = _mapper.Map<Session>(entity);
+
+        await _databaseContext.SaveChangesAsync(cancellationToken);
         await _hubContext.Clients.All.SendAsync(
             session.Id.ToString(), new { session.Id, session.Status }, cancellationToken
         );
 
-        return _memoryCache.GetOrCreate(session.Id, entry =>
-        {
-            entry.SlidingExpiration = TimeSpan.FromMinutes(5);
-
-            return session with { ExpiresIn = entry.SlidingExpiration.Value };
-        });
+        return session;
     }
 
     public async Task<Session> StartSession(Session session, CancellationToken cancellationToken)
     {
-        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
+        var entity = _databaseContext.Find<Database.Session>(session.Id)!;
 
-        session = session with
-        {
-            Status = SessionStatus.Started,
-            ExpiresIn = options.SlidingExpiration.Value
-        };
+        entity.Status = SessionStatus.Started.ToString();
+        entity.Updated = DateTime.Now;
+        entity.ExpiresAt = DateTime.Now.AddMinutes(10);
 
+        _databaseContext.Update(entity);
+        
+        session = _mapper.Map<Session>(entity);
+        
         await _hubContext.Clients.All.SendAsync(
             session.Id.ToString(), new { session.Id, session.Status }, cancellationToken);
-
-        _memoryCache.Set(session.Id, session, options);
 
         return session;
     }
 
     public async Task<Session> StopSession(Session session, CancellationToken cancellationToken)
     {
-        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
+        var entity = _databaseContext.Find<Database.Session>(session.Id)!;
 
-        session = session with
-        {
-            Status = SessionStatus.Stopped,
-            ExpiresIn = options.SlidingExpiration.Value
-        };
+        entity.Status = SessionStatus.Stopped.ToString();
+        entity.Updated = DateTime.Now;
+        entity.ExpiresAt = DateTime.Now.AddMinutes(10);
+
+        _databaseContext.Update(entity);
+        
+        session = _mapper.Map<Session>(entity);
 
         await _hubContext.Clients.All.SendAsync(
             session.Id.ToString(), new { session.Id, session.Status }, cancellationToken);
-
-        _memoryCache.Set(session.Id, session, options);
 
         return session;
     }
 
     public async Task<Session> NotifySession(Session session, JsonNode data, CancellationToken cancellationToken)
     {
-        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
-
-        session = session with
-        {
-            ExpiresIn = options.SlidingExpiration.Value
-        };
-
         await _hubContext.Clients.All.SendAsync(session.Id.ToString(), data, cancellationToken);
-
-        _memoryCache.Set(session.Id, session, options);
 
         return session;
     }
