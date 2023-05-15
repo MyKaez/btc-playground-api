@@ -30,7 +30,7 @@ public static class ExecuteSessionAction
                 return NotFound();
 
             if (session.ControlId != request.ControlId)
-                return BadRequest($"The provided control id for the session {request.SessionId} is incorrect.");
+                return NotAuthorized();
 
             session = request.Action switch
             {
