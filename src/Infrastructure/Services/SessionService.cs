@@ -23,9 +23,9 @@ public class SessionService : ISessionService
         _hubContext = hubContext;
     }
 
-    public IEnumerable<Session> GetAll(CancellationToken cancellationToken)
+    public async Task<IEnumerable<Session>> GetAll(CancellationToken cancellationToken)
     {
-        var entities = _sessionRepository.GetAll(cancellationToken);
+        var entities = await _sessionRepository.GetAll(cancellationToken);
         var sessions = _mapper.Map<Session[]>(entities);
 
         return sessions;

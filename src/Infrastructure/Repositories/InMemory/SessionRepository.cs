@@ -6,13 +6,13 @@ namespace Infrastructure.Repositories.InMemory;
 
 public class SessionRepository : ISessionRepository
 {
+    private static readonly BlockingCollection<Session> Sessions = new();
+    
     private readonly IMemoryCache _memoryCache;
-    private readonly BlockingCollection<Session> _sessions;
 
     public SessionRepository(IMemoryCache memoryCache)
     {
         _memoryCache = memoryCache;
-        _sessions = new BlockingCollection<Session>();
     }
 
     public ValueTask<Session?> GetById(Guid id, CancellationToken cancellationToken)
@@ -24,13 +24,13 @@ public class SessionRepository : ISessionRepository
 
     public Task<IReadOnlyCollection<Session>> GetAll(CancellationToken cancellationToken)
     {
-        return Task.FromResult<IReadOnlyCollection<Session>>(_sessions);
+        return Task.FromResult<IReadOnlyCollection<Session>>(Sessions);
     }
 
     public ValueTask Add(Session entity, CancellationToken cancellationToken)
     {
         _memoryCache.Set(entity.Id, entity);
-        _sessions.Add(entity, cancellationToken);
+        Sessions.Add(entity, cancellationToken);
 
         return ValueTask.CompletedTask;
     }
