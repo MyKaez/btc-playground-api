@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Infrastructure.Database;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Hubs;
 
@@ -9,4 +11,24 @@ namespace Infrastructure.Hubs;
 // https://learn.microsoft.com/en-us/aspnet/signalr/overview/guide-to-the-api/working-with-groups
 public class SessionHub : Hub
 {
+    private ILogger<SessionHub> _logger;
+
+    public SessionHub(ILogger<SessionHub> logger)
+    {
+        _logger = logger;
+    }
+
+    public override Task OnConnectedAsync()
+    {
+        _logger.LogInformation("{Name} connected", Context.ConnectionId);
+
+        return base.OnConnectedAsync();
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        _logger.LogInformation("{Name} disconnected", Context.ConnectionId);
+        
+        return base.OnDisconnectedAsync(exception);
+    }
 }
