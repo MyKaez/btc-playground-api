@@ -35,13 +35,14 @@ public class UserService : IUserService
         var res = _mapper.Map<User>(user);
 
         await _userRepository.Create(session.Id, user, cancellationToken);
-        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", res, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", new { res.Id, res.Name },
+            cancellationToken);
 
         return res;
     }
 
     public async Task Execute(Session session, User user, JsonNode data, CancellationToken cancellationToken)
     {
-        await _hubContext.Clients.All.SendAsync(session.Id.ToString(), data, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(session.Id + ":UserMessage", data, cancellationToken);
     }
 }

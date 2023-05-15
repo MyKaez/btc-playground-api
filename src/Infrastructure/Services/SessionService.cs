@@ -57,7 +57,7 @@ public class SessionService : ISessionService
 
         await _sessionRepository.Add(session, cancellationToken);
         await _hubContext.Clients.All.SendAsync(
-            res.Id.ToString(), new { res.Id, res.Status }, cancellationToken
+            res.Id + ":CreateSession", new { res.Id, res.Status }, cancellationToken
         );
 
         return res;
@@ -71,14 +71,14 @@ public class SessionService : ISessionService
             entity.Updated = DateTime.Now;
             entity.ExpiresAt = DateTime.Now.AddMinutes(10);
         }, cancellationToken);
-        
+
         if (session is null)
             return null;
 
         var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(
-            sessionId.ToString(), new { res.Id, res.Status }, cancellationToken);
+            sessionId + ":SessionUpdate", new { res.Id, res.Status }, cancellationToken);
 
         return res;
     }
@@ -94,11 +94,11 @@ public class SessionService : ISessionService
 
         if (session is null)
             return null;
-        
+
         var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(
-            sessionId.ToString(), new { res.Id, res.Status }, cancellationToken);
+            sessionId + ":SessionUpdate", new { res.Id, res.Status }, cancellationToken);
 
         return res;
     }
@@ -109,8 +109,8 @@ public class SessionService : ISessionService
 
         if (session is null)
             return null;
-        
-        await _hubContext.Clients.All.SendAsync(sessionId.ToString(), data, cancellationToken);
+
+        await _hubContext.Clients.All.SendAsync(sessionId + ":UserMessage", data, cancellationToken);
 
         return session;
     }
