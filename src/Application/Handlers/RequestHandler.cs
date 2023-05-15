@@ -12,6 +12,10 @@ public abstract class RequestHandler<TInput, TResponse> : IRequestHandler<TInput
     {
         return new RequestResult<TResponse>(NotFoundResult.Obj);
     }
+    protected RequestResult<TResponse> NotAuthorized()
+    {
+        return new RequestResult<TResponse>(NotAuthorizedResult.Obj);
+    }
     
     protected RequestResult<TResponse> BadRequest(string errorMessage)
     {

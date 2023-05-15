@@ -13,6 +13,9 @@ public abstract class BaseController : Controller
 
         if (ReferenceEquals(result.Error, NotFoundResult.Obj))
             return base.NotFound();
+        
+        if (ReferenceEquals(result.Error, NotAuthorizedResult.Obj))
+            return base.Unauthorized();
 
         return base.Problem();
     }
