@@ -12,6 +12,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "$$_CONNECTION_STRING_$$"
+          replace: ${{ secrets.SQL_CONNECTION_STRING }}
+          include: "**/appsettings.*.json"
+          regex: true
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
