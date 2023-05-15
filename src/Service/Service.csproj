@@ -28,11 +28,4 @@
         <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Remove="con_string.txt" />
-      <Content Include="con_string.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
-
 </Project>
