@@ -1,6 +1,6 @@
 ﻿using Infrastructure.Database;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Repositories.Database;
 
 public class UserRepository : IUserRepository
 {

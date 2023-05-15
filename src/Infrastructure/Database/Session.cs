@@ -17,8 +17,8 @@ public class Session
     public DateTime Updated { get; set; }
 
     public DateTime ExpiresAt { get; set; }
-    
-    public ICollection<Interaction> Interactions { get; set; }
-    
-    public ICollection<Message> Messages { get; set; }
+
+    public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
+
+    public ICollection<Message> Messages { get; set; } = new List<Message>();
 }

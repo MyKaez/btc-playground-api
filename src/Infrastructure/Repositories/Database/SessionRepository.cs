@@ -1,7 +1,7 @@
 ﻿using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Repositories.Database;
 
 public class SessionRepository : ISessionRepository
 {
