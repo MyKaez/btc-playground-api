@@ -31,10 +31,10 @@ public class ConnectionService : IConnectionService
         connections.Remove(con);
     }
 
-    public Connection Get(string connectionId)
+    public Connection? Get(string connectionId)
     {
         var connections = _memoryCache.Get<List<Connection>>("Connections")!;
-        var con = connections!.First(c => c.ConnectionId == connectionId);
+        var con = connections?.FirstOrDefault(c => c.ConnectionId == connectionId);
 
         return con;
     }

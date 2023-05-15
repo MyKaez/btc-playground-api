@@ -8,5 +8,5 @@ public interface IConnectionService
 
     void Remove(string connectionId);
     
-    Connection Get(string connectionId);
+    Connection? Get(string connectionId);
 }
