@@ -23,12 +23,12 @@ public static class ExecuteUserAction
 
         public override async Task<RequestResult<User>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var session = _sessionService.GetById(request.SessionId);
+            var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
             if (session is null)
                 return NotFound();
 
-            var user = _userService.GetById(session, request.UserId);
+            var user = await _userService.GetById(request.UserId, cancellationToken);
 
             if (user is null)
                 return NotFound();

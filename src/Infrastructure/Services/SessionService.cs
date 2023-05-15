@@ -3,8 +3,8 @@ using System.Text.Json.Nodes;
 using Application.Services;
 using AutoMapper;
 using Domain.Models;
-using Infrastructure.Database;
 using Infrastructure.Hubs;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.SignalR;
 using Session = Domain.Models.Session;
 
@@ -12,28 +12,28 @@ namespace Infrastructure.Services;
 
 public class SessionService : ISessionService
 {
-    private readonly DatabaseContext _databaseContext;
+    private readonly ISessionRepository _sessionRepository;
     private readonly IMapper _mapper;
     private readonly IHubContext<SessionHub> _hubContext;
 
-    public SessionService(DatabaseContext databaseContext, IMapper mapper, IHubContext<SessionHub> hubContext)
+    public SessionService(ISessionRepository sessionRepository, IMapper mapper, IHubContext<SessionHub> hubContext)
     {
-        _databaseContext = databaseContext;
+        _sessionRepository = sessionRepository;
         _mapper = mapper;
         _hubContext = hubContext;
     }
 
-    public IEnumerable<Session> GetAll()
+    public IEnumerable<Session> GetAll(CancellationToken cancellationToken)
     {
-        var entities = _databaseContext.Sessions;
+        var entities = _sessionRepository.GetAll(cancellationToken);
         var sessions = _mapper.Map<Session[]>(entities);
 
         return sessions;
     }
 
-    public Session? GetById(Guid id)
+    public async Task<Session?> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var entity = _databaseContext.Find<Database.Session>(id);
+        var entity = await _sessionRepository.GetById(id, cancellationToken);
         var session = _mapper.Map<Session>(entity);
 
         return session;
@@ -42,7 +42,7 @@ public class SessionService : ISessionService
     public async Task<Session?> CreateSession(
         string name, JsonElement? configuration, CancellationToken cancellationToken)
     {
-        var entity = new Database.Session
+        var session = new Database.Session
         {
             Id = Guid.NewGuid(),
             ControlId = Guid.NewGuid(),
@@ -53,58 +53,64 @@ public class SessionService : ISessionService
             Updated = DateTime.Now,
             ExpiresAt = DateTime.Now.AddMinutes(10)
         };
+        var res = _mapper.Map<Session>(session);
 
-        _databaseContext.Sessions.Add(entity);
-
-        var session = _mapper.Map<Session>(entity);
-
-        await _databaseContext.SaveChangesAsync(cancellationToken);
+        await _sessionRepository.Add(session, cancellationToken);
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), new { session.Id, session.Status }, cancellationToken
+            res.Id.ToString(), new { res.Id, res.Status }, cancellationToken
         );
 
-        return session;
+        return res;
     }
 
-    public async Task<Session> StartSession(Session session, CancellationToken cancellationToken)
+    public async Task<Session?> StartSession(Guid sessionId, CancellationToken cancellationToken)
     {
-        var entity = _databaseContext.Find<Database.Session>(session.Id)!;
-
-        entity.Status = SessionStatus.Started.ToString();
-        entity.Updated = DateTime.Now;
-        entity.ExpiresAt = DateTime.Now.AddMinutes(10);
-
-        _databaseContext.Update(entity);
+        var session = await _sessionRepository.Update(sessionId, entity =>
+        {
+            entity.Status = SessionStatus.Started.ToString();
+            entity.Updated = DateTime.Now;
+            entity.ExpiresAt = DateTime.Now.AddMinutes(10);
+        }, cancellationToken);
         
-        session = _mapper.Map<Session>(entity);
-        
-        await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), new { session.Id, session.Status }, cancellationToken);
+        if (session is null)
+            return null;
 
-        return session;
-    }
-
-    public async Task<Session> StopSession(Session session, CancellationToken cancellationToken)
-    {
-        var entity = _databaseContext.Find<Database.Session>(session.Id)!;
-
-        entity.Status = SessionStatus.Stopped.ToString();
-        entity.Updated = DateTime.Now;
-        entity.ExpiresAt = DateTime.Now.AddMinutes(10);
-
-        _databaseContext.Update(entity);
-        
-        session = _mapper.Map<Session>(entity);
+        var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(
-            session.Id.ToString(), new { session.Id, session.Status }, cancellationToken);
+            sessionId.ToString(), new { res.Id, res.Status }, cancellationToken);
 
-        return session;
+        return res;
     }
 
-    public async Task<Session> NotifySession(Session session, JsonNode data, CancellationToken cancellationToken)
+    public async Task<Session?> StopSession(Guid sessionId, CancellationToken cancellationToken)
     {
-        await _hubContext.Clients.All.SendAsync(session.Id.ToString(), data, cancellationToken);
+        var session = await _sessionRepository.Update(sessionId, entity =>
+        {
+            entity.Status = SessionStatus.Stopped.ToString();
+            entity.Updated = DateTime.Now;
+            entity.ExpiresAt = DateTime.Now.AddMinutes(10);
+        }, cancellationToken);
+
+        if (session is null)
+            return null;
+        
+        var res = _mapper.Map<Session>(session);
+
+        await _hubContext.Clients.All.SendAsync(
+            sessionId.ToString(), new { res.Id, res.Status }, cancellationToken);
+
+        return res;
+    }
+
+    public async Task<Session?> NotifySession(Guid sessionId, JsonNode data, CancellationToken cancellationToken)
+    {
+        var session = await GetById(sessionId, cancellationToken);
+
+        if (session is null)
+            return null;
+        
+        await _hubContext.Clients.All.SendAsync(sessionId.ToString(), data, cancellationToken);
 
         return session;
     }

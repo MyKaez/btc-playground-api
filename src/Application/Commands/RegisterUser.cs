@@ -22,7 +22,7 @@ public static class RegisterUser
 
         public override async Task<RequestResult<User>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var session = _sessionService.GetById(request.SessionId);
+            var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
             if (session is null)
                 return NotFound();

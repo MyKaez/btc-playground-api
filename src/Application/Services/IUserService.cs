@@ -5,7 +5,7 @@ namespace Application.Services;
 
 public interface IUserService
 {
-    User? GetById(Session session, Guid userId);
+    Task<User?> GetById(Guid userId, CancellationToken cancellationToken);
     
     Task<User> Create(Session session, string userName, CancellationToken cancellationToken);
 

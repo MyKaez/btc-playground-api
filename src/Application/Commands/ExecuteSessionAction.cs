@@ -24,7 +24,7 @@ public static class ExecuteSessionAction
 
         public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var session = _sessionService.GetById(request.SessionId);
+            var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
             if (session is null)
                 return NotFound();
@@ -34,11 +34,14 @@ public static class ExecuteSessionAction
 
             session = request.Action switch
             {
-                SessionAction.Start => await _sessionService.StartSession(session, cancellationToken),
-                SessionAction.Stop => await _sessionService.StopSession(session, cancellationToken),
-                SessionAction.Notify => await _sessionService.NotifySession(session, request.Data!, cancellationToken),
+                SessionAction.Start => await _sessionService.StartSession(session.Id, cancellationToken),
+                SessionAction.Stop => await _sessionService.StopSession(session.Id, cancellationToken),
+                SessionAction.Notify => await _sessionService.NotifySession(session.Id, request.Data!, cancellationToken),
                 _ => throw new NotSupportedException($"Cannot handle action '{request.Action}'")
             };
+
+            if (session is null)
+                return NotFound();
 
             var res = new RequestResult<Session>(session);
 

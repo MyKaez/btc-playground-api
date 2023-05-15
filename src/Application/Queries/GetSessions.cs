@@ -20,7 +20,7 @@ public static class GetSessions
 
         public override Task<RequestResult<Session[]>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var sessions = _sessionService.GetAll();
+            var sessions = _sessionService.GetAll(cancellationToken);
             var res = new RequestResult<Session[]>(sessions.ToArray());
 
             return Task.Run(() => res, cancellationToken);

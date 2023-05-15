@@ -1,39 +1,43 @@
 ﻿using System.Text.Json.Nodes;
 using Application.Services;
+using AutoMapper;
 using Domain.Models;
 using Infrastructure.Hubs;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Infrastructure.Services;
 
 public class UserService : IUserService
 {
-    private readonly IMemoryCache _memoryCache;
+    private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
     private readonly IHubContext<SessionHub> _hubContext;
 
-    public UserService(IMemoryCache memoryCache, IHubContext<SessionHub> hubContext)
+    public UserService(IUserRepository userRepository, IMapper mapper, IHubContext<SessionHub> hubContext)
     {
-        _memoryCache = memoryCache;
+        _userRepository = userRepository;
+        _mapper = mapper;
         _hubContext = hubContext;
     }
 
-    public User? GetById(Session session, Guid userId)
+    public async Task<User?> GetById(Guid userId, CancellationToken cancellationToken)
     {
-        return session.Users.FirstOrDefault(user => user.Id == userId);
+        var user = await _userRepository.GetById(userId, cancellationToken);
+        var res = _mapper.Map<User>(user);
+
+        return res;
     }
 
     public async Task<User> Create(Session session, string userName, CancellationToken cancellationToken)
     {
-        var user = new User { Id = Guid.NewGuid(), Name = userName };
-        var options = new MemoryCacheEntryOptions { SlidingExpiration = TimeSpan.FromMinutes(5) };
-        var newSession = session with { ExpiresIn = options.SlidingExpiration.Value };
+        var user = new Database.User { Id = Guid.NewGuid(), Name = userName };
+        var res = _mapper.Map<User>(user);
 
-        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", user, cancellationToken);
+        await _userRepository.Create(session.Id, user, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", res, cancellationToken);
 
-        _memoryCache.Set(session.Id, newSession.Add(user), options);
-
-        return user;
+        return res;
     }
 
     public async Task Execute(Session session, User user, JsonNode data, CancellationToken cancellationToken)
