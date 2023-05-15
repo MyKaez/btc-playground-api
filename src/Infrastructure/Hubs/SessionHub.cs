@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Infrastructure.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Hubs;
@@ -11,23 +12,38 @@ namespace Infrastructure.Hubs;
 public class SessionHub : Hub
 {
     private readonly ILogger<SessionHub> _logger;
+    private readonly IConnectionService _connectionService;
 
-    public SessionHub(ILogger<SessionHub> logger)
+    public SessionHub(ILogger<SessionHub> logger, IConnectionService connectionService)
     {
         _logger = logger;
+        _connectionService = connectionService;
     }
 
     public override Task OnConnectedAsync()
     {
-        _logger.LogInformation("{Name} connected", Context.ConnectionId);
+        _logger.LogInformation("Initiated connection {Connection}", Context.ConnectionId);
 
         return base.OnConnectedAsync();
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
-        _logger.LogInformation("{Name} disconnected", Context.ConnectionId);
+        var connection = _connectionService.Get(Context.ConnectionId);
         
+        _connectionService.Remove(Context.ConnectionId);
+        _logger.LogInformation("Session {SessionID} disconnected from {Connection}", 
+            connection.SessionId, Context.ConnectionId);
+
         return base.OnDisconnectedAsync(exception);
+    }
+
+    public Task RegisterSession(Guid sessionId)
+    {
+        _connectionService.Add(Context.ConnectionId, sessionId);
+        _logger.LogInformation(
+            "Session {SessionID} was registered for Connection {Connection}", sessionId, Context.ConnectionId);
+
+        return Task.CompletedTask;
     }
 }
