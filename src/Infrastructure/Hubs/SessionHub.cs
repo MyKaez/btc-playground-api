@@ -11,8 +11,8 @@ namespace Infrastructure.Hubs;
 // https://learn.microsoft.com/en-us/aspnet/signalr/overview/guide-to-the-api/working-with-groups
 public class SessionHub : Hub
 {
-    private readonly ILogger<SessionHub> _logger;
     private readonly IConnectionService _connectionService;
+    private readonly ILogger<SessionHub> _logger;
 
     public SessionHub(ILogger<SessionHub> logger, IConnectionService connectionService)
     {
@@ -32,7 +32,9 @@ public class SessionHub : Hub
         var connection = _connectionService.Get(Context.ConnectionId);
 
         if (connection is null)
+        {
             _logger.LogInformation("Disconnected connection {Connection}", Context.ConnectionId);
+        }
         else
         {
             _connectionService.Remove(Context.ConnectionId);
@@ -43,6 +45,10 @@ public class SessionHub : Hub
         return base.OnDisconnectedAsync(exception);
     }
 
+    /// <summary>
+    ///     This method is meant to be called by the frontend. In order to interact properly with the api, the session needs to
+    ///     be registered here.
+    /// </summary>
     public Task RegisterSession(Guid sessionId)
     {
         _connectionService.Add(Context.ConnectionId, sessionId);
