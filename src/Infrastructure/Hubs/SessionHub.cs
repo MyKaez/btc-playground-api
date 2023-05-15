@@ -1,5 +1,4 @@
-﻿using Infrastructure.Database;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Hubs;
@@ -11,7 +10,7 @@ namespace Infrastructure.Hubs;
 // https://learn.microsoft.com/en-us/aspnet/signalr/overview/guide-to-the-api/working-with-groups
 public class SessionHub : Hub
 {
-    private ILogger<SessionHub> _logger;
+    private readonly ILogger<SessionHub> _logger;
 
     public SessionHub(ILogger<SessionHub> logger)
     {
