@@ -67,13 +67,13 @@ public class SessionController : BaseController
         var cmd = new RegisterUser.Command(sessionId, request.Name);
         var res = await _mediator.Send(cmd);
 
-        return Result(res, user => _mapper.Map<UserDto>(user));
+        return Result(res, user => _mapper.Map<UserControlDto>(user));
     }
 
     [HttpPost("{sessionId:guid}/users/{userId:guid}/actions")]
     public async Task<IActionResult> Post(Guid sessionId, Guid userId, [FromBody] UserActionRequest request)
     {
-        var cmd = new ExecuteUserAction.Command(sessionId, userId, request.Data);
+        var cmd = new ExecuteUserAction.Command(sessionId, userId, request.ControlId, request.Data);
         var res = await _mediator.Send(cmd);
 
         return Result(res, user => _mapper.Map<UserDto>(user));

@@ -31,7 +31,7 @@ public class UserService : IUserService
 
     public async Task<User> Create(Session session, string userName, CancellationToken cancellationToken)
     {
-        var user = new Database.User { Id = Guid.NewGuid(), Name = userName };
+        var user = new Database.User { Id = Guid.NewGuid(), ControlId = Guid.NewGuid(), Name = userName };
         var res = _mapper.Map<User>(user);
 
         await _userRepository.Create(session.Id, user, cancellationToken);
