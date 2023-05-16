@@ -87,7 +87,7 @@ public class SessionService : ISessionService
 
         await _hubContext.Clients.All.SendAsync(
             update.SessionId + ":SessionUpdate",
-            new { session.Id, session.Status, Data = session.Configuration },
+            new { res.Id, res.Status, Data = res.Configuration },
             cancellationToken
         );
 
