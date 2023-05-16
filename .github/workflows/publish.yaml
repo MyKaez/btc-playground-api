@@ -12,9 +12,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+      
       - name: Set current date as env variable
-        run: echo "NOW=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+        run: echo "NOW=$(date +'%Y%m%d_%H%M%S')" >> $NOW
+             echo "$NOW"
         
       - name: Find and Replace
         uses: jacobtomlinson/gha-find-replace@v3
