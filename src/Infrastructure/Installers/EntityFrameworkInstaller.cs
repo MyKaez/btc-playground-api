@@ -18,7 +18,7 @@ public class EntityFrameworkInstaller : IInstaller
 
         const string c = "$$_CONNECTION_STRING_$$";
 
-        if (connectionString == c)
+        if (connectionString == c && File.Exists(@"con_string.txt"))
             connectionString = File.ReadAllText(@"con_string.txt");
 
         services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
