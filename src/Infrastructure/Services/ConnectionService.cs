@@ -23,6 +23,14 @@ public class ConnectionService : IConnectionService
         connections!.Add(con);
     }
 
+    public void Update(string connectionId, Guid userId)
+    {
+        var connection = Get(connectionId);
+
+        if (connection is not null)
+            connection.UserId = userId;
+    }
+
     public void Remove(string connectionId)
     {
         var connections = _memoryCache.Get<List<Connection>>("Connections")!;

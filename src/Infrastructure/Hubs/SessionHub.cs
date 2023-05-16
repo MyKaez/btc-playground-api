@@ -27,7 +27,7 @@ public class SessionHub : Hub
         return base.OnConnectedAsync();
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var connection = _connectionService.Get(Context.ConnectionId);
 
@@ -40,9 +40,12 @@ public class SessionHub : Hub
             _connectionService.Remove(Context.ConnectionId);
             _logger.LogInformation("Session {SessionID} disconnected from {Connection}",
                 connection.SessionId, Context.ConnectionId);
+
+            if (connection.UserId.HasValue)
+                await Clients.All.SendAsync(connection.SessionId + ":DeleteUser", connection.UserId);
         }
 
-        return base.OnDisconnectedAsync(exception);
+        await  base.OnDisconnectedAsync(exception);
     }
 
     /// <summary>
@@ -54,6 +57,19 @@ public class SessionHub : Hub
         _connectionService.Add(Context.ConnectionId, sessionId);
         _logger.LogInformation(
             "Session {SessionID} was registered for Connection {Connection}", sessionId, Context.ConnectionId);
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     This method is meant to be called by the frontend. In order to interact properly with the api, the session needs to
+    ///     be registered here.
+    /// </summary>
+    public Task RegisterUser(Guid userId)
+    {
+        _connectionService.Update(Context.ConnectionId, userId);
+        _logger.LogInformation(
+            "User {UserID} was registered for Connection {Connection}", userId, Context.ConnectionId);
 
         return Task.CompletedTask;
     }
