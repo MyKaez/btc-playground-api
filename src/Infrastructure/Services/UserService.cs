@@ -35,7 +35,7 @@ public class UserService : IUserService
         var res = _mapper.Map<User>(user);
 
         await _userRepository.Create(session.Id, user, cancellationToken);
-        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", new { res.Id, res.Name },
+        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", new { res.Id, res.Name, res.Status },
             cancellationToken);
 
         return res;
