@@ -2,6 +2,6 @@
 
 public enum UserStatus
 {
-    Ready,
-    NotReady
+    NotReady,
+    Ready
 }
