@@ -44,7 +44,7 @@ jobs:
           server: btcis.me
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /bin_$NOW/
+          server-dir: /bin_${NOW}/
           local-dir: ./pub/
           dangerous-clean-slate: true
           
