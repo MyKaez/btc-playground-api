@@ -2,6 +2,7 @@
 
 public enum SessionActionDto
 {
+    Prepare,
     Start,
     Stop,
     Notify

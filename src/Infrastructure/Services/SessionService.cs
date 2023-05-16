@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Nodes;
 using Application.Services;
 using AutoMapper;
 using Domain.Models;
@@ -12,6 +11,13 @@ namespace Infrastructure.Services;
 
 public class SessionService : ISessionService
 {
+    private static readonly Dictionary<SessionAction, SessionStatus> ActionStatusMap = new()
+    {
+        { SessionAction.Prepare, SessionStatus.Preparing },
+        { SessionAction.Start, SessionStatus.Started },
+        { SessionAction.Stop, SessionStatus.Stopped },
+    };
+
     private readonly ISessionRepository _sessionRepository;
     private readonly IMapper _mapper;
     private readonly IHubContext<SessionHub> _hubContext;
@@ -63,14 +69,16 @@ public class SessionService : ISessionService
         return res;
     }
 
-    public async Task<Session?> StartSession(Guid sessionId, CancellationToken cancellationToken)
+    public async Task<Session?> UpdateSession(SessionUpdate update, CancellationToken cancellationToken)
     {
-        var session = await _sessionRepository.Update(sessionId, entity =>
-        {
-            entity.Status = SessionStatus.Started.ToString();
-            entity.Updated = DateTime.Now;
-            entity.ExpiresAt = DateTime.Now.AddMinutes(10);
-        }, cancellationToken);
+        var session = await _sessionRepository.Update(
+            update.SessionId, session =>
+            {
+                session.Status = ActionStatusMap[update.Action].ToString();
+                session.Updated = DateTime.Now;
+                session.ExpiresAt = DateTime.Now.AddMinutes(10);
+                session.Configuration = update.Data.ToString();
+            }, cancellationToken);
 
         if (session is null)
             return null;
@@ -78,32 +86,15 @@ public class SessionService : ISessionService
         var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(
-            sessionId + ":SessionUpdate", new { res.Id, res.Status }, cancellationToken);
+            update.SessionId + ":SessionUpdate",
+            new { session.Id, session.Status, Data = session.Configuration },
+            cancellationToken
+        );
 
         return res;
     }
 
-    public async Task<Session?> StopSession(Guid sessionId, CancellationToken cancellationToken)
-    {
-        var session = await _sessionRepository.Update(sessionId, entity =>
-        {
-            entity.Status = SessionStatus.Stopped.ToString();
-            entity.Updated = DateTime.Now;
-            entity.ExpiresAt = DateTime.Now.AddMinutes(10);
-        }, cancellationToken);
-
-        if (session is null)
-            return null;
-
-        var res = _mapper.Map<Session>(session);
-
-        await _hubContext.Clients.All.SendAsync(
-            sessionId + ":SessionUpdate", new { res.Id, res.Status }, cancellationToken);
-
-        return res;
-    }
-
-    public async Task<Session?> NotifySession(Guid sessionId, JsonNode data, CancellationToken cancellationToken)
+    public async Task<Session?> NotifySession(Guid sessionId, JsonElement data, CancellationToken cancellationToken)
     {
         var session = await GetById(sessionId, cancellationToken);
 

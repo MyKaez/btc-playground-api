@@ -1,4 +1,5 @@
-﻿using Application.Commands;
+﻿using System.Text.Json;
+using Application.Commands;
 using Application.Queries;
 using AutoMapper;
 using Domain.Models;
@@ -54,7 +55,7 @@ public class SessionController : BaseController
         var sessionAction = _mapper.Map<SessionAction>(request.Action);
         var cmd = new ExecuteSessionAction.Command(sessionId, request.ControlId, sessionAction)
         {
-            Data = request.Data
+            Data = request.Data ?? JsonDocument.Parse("{}").RootElement
         };
         var res = await _mediator.Send(cmd);
 
@@ -73,7 +74,10 @@ public class SessionController : BaseController
     [HttpPost("{sessionId:guid}/users/{userId:guid}/actions")]
     public async Task<IActionResult> Post(Guid sessionId, Guid userId, [FromBody] UserActionRequest request)
     {
-        var cmd = new ExecuteUserAction.Command(sessionId, userId, request.ControlId, request.Data);
+        var cmd = new ExecuteUserAction.Command(sessionId, userId, request.ControlId)
+        {
+            Data = request.Data ?? JsonDocument.Parse("{}").RootElement
+        };
         var res = await _mediator.Send(cmd);
 
         return Result(res, user => _mapper.Map<UserDto>(user));

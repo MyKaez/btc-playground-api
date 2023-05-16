@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
 using Application.Handlers;
 using Application.Models;
 using Application.Services;
@@ -10,7 +10,7 @@ public static class ExecuteSessionAction
 {
     public record Command(Guid SessionId, Guid ControlId, SessionAction Action) : Request<Session>
     {
-        public JsonNode? Data { get; init; }
+        public JsonElement Data { get; init; }
     }
 
     public class Handler : RequestHandler<Command, Session>
@@ -32,10 +32,17 @@ public static class ExecuteSessionAction
             if (session.ControlId != request.ControlId)
                 return NotAuthorized();
 
+            var update = new SessionUpdate
+            {
+                SessionId = session.Id,
+                Action = request.Action,
+                Data = request.Data
+            };
             session = request.Action switch
             {
-                SessionAction.Start => await _sessionService.StartSession(session.Id, cancellationToken),
-                SessionAction.Stop => await _sessionService.StopSession(session.Id, cancellationToken),
+                SessionAction.Prepare => await _sessionService.UpdateSession(update, cancellationToken),
+                SessionAction.Start => await _sessionService.UpdateSession(update, cancellationToken),
+                SessionAction.Stop => await _sessionService.UpdateSession(update, cancellationToken),
                 SessionAction.Notify => await _sessionService.NotifySession(session.Id, request.Data!, cancellationToken),
                 _ => throw new NotSupportedException($"Cannot handle action '{request.Action}'")
             };

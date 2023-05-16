@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using Service.Integration.Models;
 using Service.Models.Requests;
 
@@ -29,7 +29,7 @@ public static class HttpClientExtensions
         return user;
     }
 
-    public static async Task<Session> NotifySession(this HttpClient client, SessionControl session, JsonNode data)
+    public static async Task<Session> NotifySession(this HttpClient client, SessionControl session, JsonElement data)
     {
         var req = new SessionActionRequest
         {
@@ -50,7 +50,7 @@ public static class HttpClientExtensions
         var req = new SessionActionRequest
         {
             ControlId = session.ControlId,
-            Action = SessionActionDto.Start
+            Action = SessionActionDto.Start,
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
         var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
@@ -75,17 +75,16 @@ public static class HttpClientExtensions
         return reSession;
     }
 
-    public static async Task<User> ExecuteUserAction(this HttpClient client, Session session, User user, JsonNode data)
+    public static async Task ExecuteUserAction(this HttpClient client, Session session, User user, JsonElement data)
     {
         var req = new UserActionRequest
         {
+            ControlId = user.ControlId,
             Data = data
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{user.Id}/actions", req);
         var resUser = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);
 
         Assert.NotNull(resUser);
-
-        return resUser;
     }
 }

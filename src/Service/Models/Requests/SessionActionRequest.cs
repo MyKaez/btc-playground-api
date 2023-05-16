@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
 
 namespace Service.Models.Requests;
 
@@ -8,5 +8,5 @@ public class SessionActionRequest
 
     public SessionActionDto Action { get; init; }
 
-    public JsonNode Data { get; init; } = new JsonObject();
+    public JsonElement? Data { get; init; }
 }

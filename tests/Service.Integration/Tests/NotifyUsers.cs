@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Integration.Extensions;
@@ -29,8 +29,8 @@ public class NotifyUsers
 
         await _client.NotifySession(session, data);
         await connection.DisposeAsync();
-        
-        Assert.Contains(messages, msg => msg.Contains(data.ToString()));
+
+        Assert.Contains(messages, msg => IsMessageCorrect(data, msg));
     }
 
     [Fact]
@@ -40,21 +40,37 @@ public class NotifyUsers
         var (connection, messages) = await _testServer.CreateHub(session);
         var user = await _client.CreateUser(session);
         var data = GetData();
-        
+
         await _client.ExecuteUserAction(session, user, data);
         await connection.DisposeAsync();
 
         Assert.Contains(messages, msg => msg.Contains(user.Name));
-        Assert.Contains(messages, msg => msg.Contains(data.ToString()));
+        Assert.Contains(messages, msg => IsMessageCorrect(data, msg));
     }
 
-    private static JsonNode GetData()
+    private static bool IsMessageCorrect(JsonElement data, string msg)
     {
-        var data =new JsonObject
+        var enumerator = data.EnumerateObject();
+        var isCorrect = true;
+
+        while (enumerator.MoveNext() && isCorrect)
         {
-            { "completed", true },
-            { "foundHash", Guid.Empty.ToString("N") + Guid.NewGuid().ToString("N") }
-        };
-        return data;
+            isCorrect &= msg.Contains(enumerator.Current.Name) &&
+                         msg.Contains(enumerator.Current.Value.GetRawText());
+        }
+
+        return isCorrect;
+    }
+
+    private static JsonElement GetData()
+    {
+        var hash = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        var data = JsonDocument.Parse($$"""
+        {
+          "completed": true,
+          "foundHash": "{{hash}}"
+        }
+        """);
+        return data.RootElement;
     }
 }

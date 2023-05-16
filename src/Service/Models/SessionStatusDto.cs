@@ -3,6 +3,7 @@
 public enum SessionStatusDto
 {
     NotStarted,
+    Preparing,
     Started,
     Stopped
 }

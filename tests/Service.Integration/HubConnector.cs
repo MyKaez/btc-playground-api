@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -35,8 +36,10 @@ public class HubConnector
         var connection = _hubConnectionBuilder.Build();
         var messages = new BlockingCollection<string>();
 
-        connection.On<JsonNode>(session.Id.ToString(), message => messages.Add(message.ToString()));
-        connection.On<User>(session.Id + ":CreateUser", message => messages.Add(message.Name));
+        connection.On<User>(session.Id + ":CreateUser", user => messages.Add(user.Name));
+        connection.On<User>(session.Id + ":DeleteUser", user => messages.Add(user.Name));
+        connection.On<SessionUpdate>(session.Id + ":SessionUpdate", update => messages.Add(update.Status));
+        connection.On<JsonElement>(session.Id + ":UserMessage", message => messages.Add(message.ToString()));
         
         await connection.StartAsync();
 
