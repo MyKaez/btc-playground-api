@@ -22,6 +22,11 @@ public class DatabaseProfile : Profile
                     o => Enum.Parse<SessionStatus>(o.Status)
                 )
             );
-        CreateMap<Database.User, User>();
+        CreateMap<Database.User, User>().ForMember(
+            s => s.Status,
+            opt => opt.MapFrom(
+                o => Enum.Parse<UserStatus>(o.Status)
+            )
+        );
     }
 }
