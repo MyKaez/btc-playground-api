@@ -55,7 +55,7 @@ public class SessionController : BaseController
         var sessionAction = _mapper.Map<SessionAction>(request.Action);
         var cmd = new ExecuteSessionAction.Command(sessionId, request.ControlId, sessionAction)
         {
-            Data = request.Data ?? JsonDocument.Parse("{}").RootElement
+            Data = request.Configuration ?? JsonDocument.Parse("{}").RootElement
         };
         var res = await _mediator.Send(cmd);
 
@@ -76,7 +76,7 @@ public class SessionController : BaseController
     {
         var cmd = new ExecuteUserAction.Command(sessionId, userId, request.ControlId)
         {
-            Data = request.Data ?? JsonDocument.Parse("{}").RootElement
+            Data = request.Configuration ?? JsonDocument.Parse("{}").RootElement
         };
         var res = await _mediator.Send(cmd);
 

@@ -8,5 +8,5 @@ public class SessionActionRequest
 
     public SessionActionDto Action { get; init; }
 
-    public JsonElement? Data { get; init; }
+    public JsonElement? Configuration { get; init; }
 }

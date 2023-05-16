@@ -35,7 +35,7 @@ public static class HttpClientExtensions
         {
             ControlId = session.ControlId,
             Action = SessionActionDto.Notify,
-            Data = data
+            Configuration = data
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
         var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
@@ -59,7 +59,7 @@ public static class HttpClientExtensions
 
         return reSession;
     }
-    
+
     public static async Task<Session> StopSession(this HttpClient client, SessionControl session)
     {
         var req = new SessionActionRequest
@@ -80,7 +80,7 @@ public static class HttpClientExtensions
         var req = new UserActionRequest
         {
             ControlId = user.ControlId,
-            Data = data
+            Configuration = data
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{user.Id}/actions", req);
         var resUser = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);

@@ -6,5 +6,5 @@ public class UserActionRequest
 {
     public Guid ControlId { get; init; }
     
-    public JsonElement? Data { get; init; }
+    public JsonElement? Configuration { get; init; }
 }
