@@ -9,4 +9,6 @@ public interface IUserService
     Task<User> Create(Session session, string userName, CancellationToken cancellationToken);
 
     Task<User?> Update(UserUpdate update, CancellationToken cancellationToken);
+    
+    Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken);
 }

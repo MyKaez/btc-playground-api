@@ -71,6 +71,15 @@ public class SessionController : BaseController
         return Result(res, session => _mapper.Map<SessionDto>(session));
     }
 
+    [HttpGet("{sessionId:guid}/users")]
+    public async Task<IActionResult> GetUsers(Guid sessionId)
+    {
+        var query = new GetSessionUsers.Query(sessionId);
+        var res = await _mediator.Send(query);
+
+        return Result(res, user => _mapper.Map<UserDto[]>(user));
+    }
+
     [HttpPost("{sessionId:guid}/users")]
     public async Task<IActionResult> Post(Guid sessionId, [FromBody] UserRequest request)
     {

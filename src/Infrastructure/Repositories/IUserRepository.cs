@@ -9,4 +9,6 @@ public interface IUserRepository
     Task Create(Guid sessionId, User user, CancellationToken cancellationToken);
     
     Task<User?> Update(Guid userId, Action<User> update, CancellationToken cancellationToken);
+    
+    Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken);
 }

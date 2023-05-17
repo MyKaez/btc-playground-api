@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.Database;
 
@@ -43,5 +44,15 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync(cancellationToken);
 
         return session;
+    }
+
+    public async Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
+    {
+        var users =
+            from interaction in _context.Interactions.Include(i => i.User)
+            where interaction.SessionId == sessionId
+            select interaction.User;
+
+        return await users.ToArrayAsync(cancellationToken);
     }
 }

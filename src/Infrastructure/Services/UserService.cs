@@ -62,4 +62,12 @@ public class UserService : IUserService
 
         return res;
     }
+
+    public async Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
+    {
+        var users = await _userRepository.GetBySessionId(sessionId, cancellationToken);
+        var res = _mapper.Map<User[]>(users);
+
+        return res;
+    }
 }

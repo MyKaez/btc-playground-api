@@ -45,4 +45,12 @@ public class UserRepository : IUserRepository
 
         return user;
     }
+
+    public Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
+    {
+        var session = _memoryCache.Get<Session>(sessionId)!;
+        var users = session.Interactions.Select(i => i.User).ToArray();
+
+        return Task.FromResult(users);
+    }
 }
