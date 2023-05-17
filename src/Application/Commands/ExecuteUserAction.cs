@@ -10,7 +10,7 @@ public static class ExecuteUserAction
 {
     public record Command(Guid SessionId, Guid UserId, Guid UserControlId) : Request<User>
     {
-        public JsonElement Data { get; init; }
+        public JsonElement Configuration { get; init; }
     }
 
     public class Handler : RequestHandler<Command, User>
@@ -39,7 +39,7 @@ public static class ExecuteUserAction
             if (user.ControlId != request.UserControlId)
                 return NotAuthorized();
 
-            await _userService.Execute(session, request.Data, cancellationToken);
+            await _userService.Execute(session, request.Configuration, cancellationToken);
 
             var res = new RequestResult<User>(user);
 
