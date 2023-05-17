@@ -43,6 +43,6 @@ public class UserService : IUserService
 
     public async Task Execute(Session session, JsonElement data, CancellationToken cancellationToken)
     {
-        await _hubContext.Clients.All.SendAsync(session.Id + ":UserMessage", data, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(session.Id + ":UserUpdate", data, cancellationToken);
     }
 }
