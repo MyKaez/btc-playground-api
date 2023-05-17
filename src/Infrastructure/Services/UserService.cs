@@ -41,8 +41,9 @@ public class UserService : IUserService
         return res;
     }
 
-    public async Task Execute(Session session, JsonElement data, CancellationToken cancellationToken)
+    public async Task Execute(Guid sessionId, Guid userId, JsonElement configuration, CancellationToken cancellationToken)
     {
-        await _hubContext.Clients.All.SendAsync(session.Id + ":UserUpdate", data, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(sessionId + ":UserUpdate",
+            new { Id = userId, Configuration = configuration }, cancellationToken);
     }
 }

@@ -39,7 +39,7 @@ public static class ExecuteUserAction
             if (user.ControlId != request.UserControlId)
                 return NotAuthorized();
 
-            await _userService.Execute(session, request.Configuration, cancellationToken);
+            await _userService.Execute(session.Id, user.Id, request.Configuration, cancellationToken);
 
             var res = new RequestResult<User>(user);
 

@@ -9,5 +9,5 @@ public interface IUserService
     
     Task<User> Create(Session session, string userName, CancellationToken cancellationToken);
 
-    Task Execute(Session session, JsonElement data, CancellationToken cancellationToken);
+    Task Execute(Guid sessionId, Guid userId, JsonElement configuration, CancellationToken cancellationToken);
 }
