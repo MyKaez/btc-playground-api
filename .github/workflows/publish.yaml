@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+      
       - name: Set current date as env variable
-        run: echo "NOW=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+        run: echo "NOW=$(date +%Y%m%d%H%M%S)"
         
       - name: Find and Replace
         uses: jacobtomlinson/gha-find-replace@v3
@@ -38,13 +38,26 @@ jobs:
       - name: Publish API
         run: dotnet publish -o ./pub
 
-      - name: Upload Binaries via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+     # - name: Upload Binaries via FTP
+     #   uses: SamKirkland/FTP-Deploy-Action@4.0.0
+     #   with:
+     #     server: btcis.me
+     #     username: ${{ secrets.FTP_USERNAME }}
+     #     password: ${{ secrets.FTP_PASSWORD }}
+     #     server-dir: "/bin_${NOW}/"
+     #     local-dir: ./pub/
+     #     dangerous-clean-slate: true
+          
+      - name: FTP Deployment
+        # You may pin to the exact commit or the version.
+        # uses: airvzxf/ftp-deployment-action@9efe025c218094bd451a0cb684d7cb471f4d9d4f
+        uses: airvzxf/ftp-deployment-action@latest
         with:
           server: btcis.me
-          username: ${{ secrets.FTP_USERNAME }}
+          user:  ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /bin_$NOW/
-          local-dir: ./pub/
-          dangerous-clean-slate: true
+          local_dir: ./pub/
+          remote_dir: "/bin/"
+          delete: true
+      
           
