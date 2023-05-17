@@ -58,7 +58,7 @@ public class UserService : IUserService
         var res = _mapper.Map<User>(user);
 
         await _hubContext.Clients.All.SendAsync(update.SessionId + ":UserUpdate",
-            new { user.Id, user.Status, update.Configuration }, cancellationToken);
+            new { res.Id, res.Status, res.Configuration }, cancellationToken);
 
         return res;
     }
