@@ -21,8 +21,15 @@ public class DatabaseProfile : Profile
                     o => Enum.Parse<SessionStatus>(o.Status)
                 )
             );
-        CreateMap<Database.User, User>().ForMember(
-            s => s.Status,
+        CreateMap<Database.User, User>()
+            .ForMember(
+                u => u.Configuration,
+                opt => opt.MapFrom(
+                    o => o.Configuration != null
+                        ? JsonDocument.Parse(o.Configuration, default).RootElement
+                        : JsonDocument.Parse("{}", default).RootElement)
+            ).ForMember(
+            u => u.Status,
             opt => opt.MapFrom(
                 o => Enum.Parse<UserStatus>(o.Status)
             )

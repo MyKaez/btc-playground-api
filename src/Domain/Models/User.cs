@@ -1,4 +1,6 @@
-﻿namespace Domain.Models;
+﻿using System.Text.Json;
+
+namespace Domain.Models;
 
 public record User
 {
@@ -9,4 +11,6 @@ public record User
     public string Name { get; init; } = "";
 
     public UserStatus Status { get; init; }
+    
+    public JsonElement? Configuration { get; set; }
 }

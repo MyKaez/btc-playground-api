@@ -10,7 +10,7 @@ public class User
 
     public string Status { get; set; } = "";
 
-    public string Configuration { get; set; } = "";
+    public string? Configuration { get; set; }
     
     public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
 
