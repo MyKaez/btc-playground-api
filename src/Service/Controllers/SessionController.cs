@@ -55,8 +55,17 @@ public class SessionController : BaseController
         var sessionAction = _mapper.Map<SessionAction>(request.Action);
         var cmd = new ExecuteSessionAction.Command(sessionId, request.ControlId, sessionAction)
         {
-            Data = request.Configuration ?? JsonDocument.Parse("{}").RootElement
+            Configuration = request.Configuration ?? JsonDocument.Parse("{}").RootElement
         };
+        var res = await _mediator.Send(cmd);
+
+        return Result(res, session => _mapper.Map<SessionDto>(session));
+    }
+
+    [HttpPost("{sessionId:guid}/messages")]
+    public async Task<IActionResult> Post(Guid sessionId, [FromBody] MessageRequest request)
+    {
+        var cmd = new SendMessage.Command(sessionId, sessionId, request.ControlId, request.Text);
         var res = await _mediator.Send(cmd);
 
         return Result(res, session => _mapper.Map<SessionDto>(session));
@@ -69,6 +78,15 @@ public class SessionController : BaseController
         var res = await _mediator.Send(cmd);
 
         return Result(res, user => _mapper.Map<UserControlDto>(user));
+    }
+
+    [HttpPost("{sessionId:guid}/users/{userId:guid}/messages")]
+    public async Task<IActionResult> Post(Guid sessionId, Guid userId, [FromBody] MessageRequest request)
+    {
+        var cmd = new SendMessage.Command(sessionId, userId, request.ControlId, request.Text);
+        var res = await _mediator.Send(cmd);
+
+        return Result(res, session => _mapper.Map<SessionDto>(session));
     }
 
     [HttpPost("{sessionId:guid}/users/{userId:guid}/actions")]

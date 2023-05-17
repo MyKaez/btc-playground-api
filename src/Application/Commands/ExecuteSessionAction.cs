@@ -10,7 +10,7 @@ public static class ExecuteSessionAction
 {
     public record Command(Guid SessionId, Guid ControlId, SessionAction Action) : Request<Session>
     {
-        public JsonElement Data { get; init; }
+        public JsonElement Configuration { get; init; }
     }
 
     public class Handler : RequestHandler<Command, Session>
@@ -36,17 +36,10 @@ public static class ExecuteSessionAction
             {
                 SessionId = session.Id,
                 Action = request.Action,
-                Data = request.Data
+                Configuration = request.Configuration
             };
-            session = request.Action switch
-            {
-                SessionAction.Prepare => await _sessionService.UpdateSession(update, cancellationToken),
-                SessionAction.Start => await _sessionService.UpdateSession(update, cancellationToken),
-                SessionAction.Stop => await _sessionService.UpdateSession(update, cancellationToken),
-                SessionAction.Reset => await _sessionService.UpdateSession(update, cancellationToken),
-                SessionAction.Notify => await _sessionService.NotifySession(session.Id, request.Data, cancellationToken),
-                _ => throw new NotSupportedException($"Cannot handle action '{request.Action}'")
-            };
+            
+            session = await _sessionService.UpdateSession(update, cancellationToken);
 
             if (session is null)
                 return NotFound();

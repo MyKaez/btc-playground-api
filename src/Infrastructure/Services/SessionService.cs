@@ -78,7 +78,7 @@ public class SessionService : ISessionService
                 session.Status = ActionStatusMap[update.Action].ToString();
                 session.Updated = DateTime.Now;
                 session.ExpiresAt = DateTime.Now.AddMinutes(10);
-                session.Configuration = update.Data.ToString();
+                session.Configuration = update.Configuration.ToString();
             }, cancellationToken);
 
         if (session is null)
@@ -90,17 +90,5 @@ public class SessionService : ISessionService
             new { res.Id, res.Status, res.Configuration }, cancellationToken);
 
         return res;
-    }
-
-    public async Task<Session?> NotifySession(Guid sessionId, JsonElement data, CancellationToken cancellationToken)
-    {
-        var session = await GetById(sessionId, cancellationToken);
-
-        if (session is null)
-            return null;
-
-        await _hubContext.Clients.All.SendAsync(sessionId + ":UserMessage", data, cancellationToken);
-
-        return session;
     }
 }

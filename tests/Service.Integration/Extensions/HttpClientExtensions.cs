@@ -31,13 +31,12 @@ public static class HttpClientExtensions
 
     public static async Task<Session> NotifySession(this HttpClient client, SessionControl session, JsonElement data)
     {
-        var req = new SessionActionRequest
+        var req = new MessageRequest
         {
             ControlId = session.ControlId,
-            Action = SessionActionDto.Notify,
-            Configuration = data
+            Text = data.ToString()
         };
-        var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
+        var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/messages", req);
         var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
 
         Assert.NotNull(reSession);

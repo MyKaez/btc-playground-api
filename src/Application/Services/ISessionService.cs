@@ -12,6 +12,4 @@ public interface ISessionService
     Task<Session?> CreateSession(string name, JsonElement? configuration, CancellationToken cancellationToken);
 
     Task<Session?> UpdateSession(SessionUpdate update, CancellationToken cancellationToken);
-    
-    Task<Session?> NotifySession(Guid sessionId, JsonElement data, CancellationToken cancellationToken);
 }
