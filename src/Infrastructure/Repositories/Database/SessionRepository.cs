@@ -5,39 +5,39 @@ namespace Infrastructure.Repositories.Database;
 
 public class SessionRepository : ISessionRepository
 {
-    private readonly DatabaseContext _databaseContext;
+    private readonly DatabaseContext _context;
 
-    public SessionRepository(DatabaseContext databaseContext)
+    public SessionRepository(DatabaseContext context)
     {
-        _databaseContext = databaseContext;
+        _context = context;
     }
 
     public ValueTask<Session?> GetById(Guid id, CancellationToken cancellationToken)
     {
-        return _databaseContext.FindAsync<Session>(new object[] { id }, cancellationToken);
+        return _context.FindAsync<Session>(new object[] { id }, cancellationToken);
     }
 
     public async Task<IReadOnlyCollection<Session>> GetAll(CancellationToken cancellationToken)
     {
-        return await _databaseContext.Sessions.ToArrayAsync(cancellationToken: cancellationToken);
+        return await _context.Sessions.ToArrayAsync(cancellationToken: cancellationToken);
     }
 
     public async ValueTask Add(Session entity, CancellationToken cancellationToken)
     {
-        await _databaseContext.Sessions.AddAsync(entity, cancellationToken);
+        await _context.Sessions.AddAsync(entity, cancellationToken);
     }
 
-    public async Task<Session?> Update(Guid id, Action<Session> entity, CancellationToken cancellationToken)
+    public async Task<Session?> Update(Guid id, Action<Session> update, CancellationToken cancellationToken)
     {
         var session = await GetById(id, cancellationToken);
 
         if (session is null)
             return null;
 
-        entity(session);
-        _databaseContext.Update(session);
+        update(session);
+        _context.Update(session);
 
-        await _databaseContext.SaveChangesAsync(cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return session;
     }

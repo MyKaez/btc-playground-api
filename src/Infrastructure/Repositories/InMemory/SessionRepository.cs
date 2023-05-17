@@ -35,13 +35,13 @@ public class SessionRepository : ISessionRepository
         return ValueTask.CompletedTask;
     }
 
-    public Task<Session?> Update(Guid id, Action<Session> entity, CancellationToken cancellationToken)
+    public async Task<Session?> Update(Guid id, Action<Session> update, CancellationToken cancellationToken)
     {
-        var entry = _memoryCache.Get<Session>(id);
+        var session = await GetById(id, cancellationToken);
 
-        if (entry is not null)
-            entity(entry);
+        if (session is not null)
+            update(session);
 
-        return Task.FromResult(entry);
+        return session;
     }
 }

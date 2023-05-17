@@ -94,6 +94,7 @@ public class SessionController : BaseController
     {
         var cmd = new ExecuteUserAction.Command(sessionId, userId, request.ControlId)
         {
+            Status = _mapper.Map<UserStatus>(request.Status),
             Configuration = request.Configuration ?? JsonDocument.Parse("{}").RootElement
         };
         var res = await _mediator.Send(cmd);

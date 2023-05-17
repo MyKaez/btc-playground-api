@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Application.Services;
+﻿using Application.Services;
 using AutoMapper;
 using Domain.Models;
 using Infrastructure.Hubs;
@@ -31,7 +30,10 @@ public class UserService : IUserService
 
     public async Task<User> Create(Session session, string userName, CancellationToken cancellationToken)
     {
-        var user = new Database.User { Id = Guid.NewGuid(), ControlId = Guid.NewGuid(), Name = userName, Status = UserStatus.NotReady.ToString() };
+        var user = new Database.User
+        {
+            Id = Guid.NewGuid(), ControlId = Guid.NewGuid(), Name = userName, Status = UserStatus.NotReady.ToString()
+        };
         var res = _mapper.Map<User>(user);
 
         await _userRepository.Create(session.Id, user, cancellationToken);
@@ -41,9 +43,23 @@ public class UserService : IUserService
         return res;
     }
 
-    public async Task Execute(Guid sessionId, Guid userId, JsonElement configuration, CancellationToken cancellationToken)
+    public async Task<User?> Update(UserUpdate update, CancellationToken cancellationToken)
     {
-        await _hubContext.Clients.All.SendAsync(sessionId + ":UserUpdate",
-            new { Id = userId, Configuration = configuration }, cancellationToken);
+        var user = await _userRepository.Update(
+            update.UserId, user =>
+            {
+                user.Status = update.Status.ToString();
+                user.Configuration = update.Configuration.ToString();
+            }, cancellationToken);
+
+        if (user is null)
+            return null;
+
+        var res = _mapper.Map<User>(user);
+
+        await _hubContext.Clients.All.SendAsync(update.SessionId + ":UserUpdate",
+            new { user.Id, user.Status, update.Configuration }, cancellationToken);
+
+        return res;
     }
 }

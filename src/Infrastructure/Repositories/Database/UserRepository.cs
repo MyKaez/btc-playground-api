@@ -29,4 +29,19 @@ public class UserRepository : IUserRepository
         await _context.AddAsync(user, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<User?> Update(Guid userId, Action<User> update, CancellationToken cancellationToken)
+    {
+        var session = await GetById(userId, cancellationToken);
+
+        if (session is null)
+            return null;
+
+        update(session);
+        _context.Update(session);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return session;
+    }
 }

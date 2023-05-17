@@ -10,6 +10,8 @@ public static class ExecuteUserAction
 {
     public record Command(Guid SessionId, Guid UserId, Guid UserControlId) : Request<User>
     {
+        public UserStatus Status { get; init; }
+        
         public JsonElement Configuration { get; init; }
     }
 
@@ -39,7 +41,15 @@ public static class ExecuteUserAction
             if (user.ControlId != request.UserControlId)
                 return NotAuthorized();
 
-            await _userService.Execute(session.Id, user.Id, request.Configuration, cancellationToken);
+            var update = new UserUpdate
+            {
+                SessionId = session.Id,
+                UserId = user.Id,
+                Status = request.Status,
+                Configuration = request.Configuration
+            };
+
+            await _userService.Update(update, cancellationToken);
 
             var res = new RequestResult<User>(user);
 

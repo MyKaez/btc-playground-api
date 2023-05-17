@@ -3,7 +3,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Infrastructure.Repositories.InMemory;
 
-public class UserRepository:IUserRepository
+public class UserRepository : IUserRepository
 {
     private readonly IMemoryCache _memoryCache;
 
@@ -24,15 +24,25 @@ public class UserRepository:IUserRepository
         var session = _memoryCache.Get<Session>(sessionId)!;
         var interaction = new Interaction
         {
-            Session = session, 
+            Session = session,
             User = user
         };
-        
+
         user.Interactions.Add(interaction);
         session.Interactions.Add(interaction);
 
         _memoryCache.Set(user.Id, user);
 
         return Task.CompletedTask;
+    }
+
+    public async Task<User?> Update(Guid userId, Action<User> update, CancellationToken cancellationToken)
+    {
+        var user = await GetById(userId, cancellationToken);
+
+        if (user is not null)
+            update(user);
+
+        return user;
     }
 }
