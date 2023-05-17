@@ -16,6 +16,7 @@ public class SessionService : ISessionService
         { SessionAction.Prepare, SessionStatus.Preparing },
         { SessionAction.Start, SessionStatus.Started },
         { SessionAction.Stop, SessionStatus.Stopped },
+        { SessionAction.Reset, SessionStatus.NotStarted },
     };
 
     private readonly ISessionRepository _sessionRepository;

@@ -43,7 +43,8 @@ public static class ExecuteSessionAction
                 SessionAction.Prepare => await _sessionService.UpdateSession(update, cancellationToken),
                 SessionAction.Start => await _sessionService.UpdateSession(update, cancellationToken),
                 SessionAction.Stop => await _sessionService.UpdateSession(update, cancellationToken),
-                SessionAction.Notify => await _sessionService.NotifySession(session.Id, request.Data!, cancellationToken),
+                SessionAction.Reset => await _sessionService.UpdateSession(update, cancellationToken),
+                SessionAction.Notify => await _sessionService.NotifySession(session.Id, request.Data, cancellationToken),
                 _ => throw new NotSupportedException($"Cannot handle action '{request.Action}'")
             };
 

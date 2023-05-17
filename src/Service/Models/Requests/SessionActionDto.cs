@@ -5,5 +5,6 @@ public enum SessionActionDto
     Prepare,
     Start,
     Stop,
+    Reset,
     Notify
 }
