@@ -14,10 +14,10 @@ public static class GetSessionUsers
         private readonly ISessionService _sessionService;
         private readonly IUserService _userService;
 
-        public Handler(ISessionService sessionService, IUserService _userService)
+        public Handler(ISessionService sessionService, IUserService userService)
         {
             _sessionService = sessionService;
-            this._userService = _userService;
+            _userService = userService;
         }
         
         public override async Task<RequestResult<User[]>> Handle(Query request, CancellationToken cancellationToken)
