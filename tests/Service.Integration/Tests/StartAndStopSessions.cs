@@ -37,8 +37,8 @@ public class StartAndStopSessions
 
         await connection.DisposeAsync();
         Assert.Equal(2, messages.Count);
-        Assert.Contains(messages, val => val.Contains("Started"));
-        Assert.Contains(messages, val => val.Contains("Stopped"));
+        Assert.Contains(messages, val => val.Contains("started"));
+        Assert.Contains(messages, val => val.Contains("stopped"));
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public class StartAndStopSessions
             await connection.DisposeAsync();
             
             Assert.Equal(2, messages.Count);
-            Assert.Contains(messages, val => val.Contains("Started"));
-            Assert.Contains(messages, val => val.Contains("Stopped"));
+            Assert.Contains(messages, val => val.Contains("started"));
+            Assert.Contains(messages, val => val.Contains("stopped"));
         }
     }
 }
