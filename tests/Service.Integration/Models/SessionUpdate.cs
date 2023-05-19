@@ -8,5 +8,5 @@ public class SessionUpdate
 
     public string Status { get; set; } = "";
 
-    public JsonElement Data { get; set; }
+    public JsonElement Configuration { get; set; }
 }
