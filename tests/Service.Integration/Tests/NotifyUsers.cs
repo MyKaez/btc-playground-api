@@ -56,7 +56,7 @@ public class NotifyUsers
         while (enumerator.MoveNext() && isCorrect)
         {
             isCorrect &= msg.Contains(enumerator.Current.Name) &&
-                         msg.Contains(enumerator.Current.Value.GetRawText());
+                         msg.Contains(enumerator.Current.Value.GetRawText().Trim('"'));
         }
 
         return isCorrect;
