@@ -49,9 +49,9 @@ public static class ExecuteUserAction
                 Configuration = request.Configuration
             };
 
-            await _userService.Update(update, cancellationToken);
+            user = await _userService.Update(update, cancellationToken);
 
-            var res = new RequestResult<User>(user);
+            var res = new RequestResult<User>(user!);
 
             return res;
         }

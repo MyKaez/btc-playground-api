@@ -1,6 +1,6 @@
 ﻿namespace Service.Integration.Models;
 
-public record User
+public record UserControl
 {
     public Guid Id { get; set; }
 

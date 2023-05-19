@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Infrastructure;
 using Infrastructure.Hubs;
+using Service.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,17 +14,8 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     )
 );
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-    });
-builder.Services.AddSignalR().AddJsonProtocol(options =>
-{
-    options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-});
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.SetApiDefaults());
+builder.Services.AddSignalR().AddJsonProtocol(options => options.PayloadSerializerOptions.SetApiDefaults());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);

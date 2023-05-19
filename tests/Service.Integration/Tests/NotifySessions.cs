@@ -61,7 +61,7 @@ public class NotifySessions
     }
 
     private static async Task<bool> FoundMessages(
-        IReadOnlyCollection<string> messages, params User[] users)
+        IReadOnlyCollection<string> messages, params UserControl[] users)
     {
         var waitingForMessages = true;
 

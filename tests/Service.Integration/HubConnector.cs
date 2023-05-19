@@ -35,8 +35,8 @@ public class HubConnector
         var connection = _hubConnectionBuilder.Build();
         var messages = new BlockingCollection<string>();
 
-        connection.On<User>(session.Id + ":CreateUser", user => messages.Add(user.Name));
-        connection.On<User>(session.Id + ":DeleteUser", user => messages.Add(user.Name));
+        connection.On<UserControl>(session.Id + ":CreateUser", user => messages.Add(user.Name));
+        connection.On<UserControl>(session.Id + ":DeleteUser", user => messages.Add(user.Name));
         connection.On<UserUpdate>(session.Id + ":UserUpdate", user => messages.Add(user.Configuration.ToString()));
         connection.On<SessionUpdate>(session.Id + ":SessionUpdate", update => messages.Add(update.Status));
         connection.On<JsonElement>(session.Id + ":UserMessage", message => messages.Add(message.ToString()));

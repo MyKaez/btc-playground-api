@@ -1,7 +1,11 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using Domain.Models;
+using Domain.Simulations;
 using Service.Integration.Models;
+using Service.Models;
 using Service.Models.Requests;
+using Session = Service.Integration.Models.Session;
 
 namespace Service.Integration.Extensions;
 
@@ -18,18 +22,48 @@ public static class HttpClientExtensions
         return session;
     }
 
-    public static async Task<User> CreateUser(this HttpClient client, Session session, string userName = "Sarah")
+    public static async Task PrepareSession(this HttpClient client, SessionControl sessionControl, ISimulation simulation)
+    {
+        var req = new SessionActionRequest
+        {
+            ControlId = sessionControl.ControlId,
+            Action = SessionActionDto.Prepare,
+            Configuration = simulation.ToJsonElement()
+        };
+        var res = await client.PostAsJsonAsync($"v1/sessions/{sessionControl.Id}/actions", req);
+        var session = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
+
+        Assert.NotNull(session);
+        Assert.Equal(SessionStatus.Preparing, session.Status);
+    }
+
+    public static async Task<UserControl> CreateUser(this HttpClient client, Session session, string userName = "Sarah")
     {
         var req = new UserRequest { Name = userName };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users", req);
-        var user = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);
+        var user = await res.Content.ReadFromJsonAsync<UserControl>(Defaults.Options);
 
         Assert.NotNull(user);
 
         return user;
     }
 
-    public static async Task<Session> NotifySession(this HttpClient client, SessionControl session, JsonElement data)
+    public static async Task UpdateUser(this HttpClient client, Guid sessionId, UserControl userControlControl, ISimulationUser configuration)
+    {
+        var req = new UserActionRequest
+        {
+            ControlId = userControlControl.ControlId,
+            Status = UserStatusDto.Ready,
+            Configuration = configuration.ToJsonElement()
+        };
+        var res = await client.PostAsJsonAsync($"v1/sessions/{sessionId}/users/{userControlControl.Id}/actions", req);
+        var user = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);
+
+        Assert.NotNull(user);
+        Assert.Equal(UserStatus.Ready, user.Status);
+    }
+
+    public static async Task NotifySession(this HttpClient client, SessionControl session, JsonElement data)
     {
         var req = new MessageRequest
         {
@@ -40,8 +74,6 @@ public static class HttpClientExtensions
         var reSession = await res.Content.ReadFromJsonAsync<Session>(Defaults.Options);
 
         Assert.NotNull(reSession);
-
-        return reSession;
     }
 
     public static async Task<Session> StartSession(this HttpClient client, SessionControl session)
@@ -74,15 +106,15 @@ public static class HttpClientExtensions
         return reSession;
     }
 
-    public static async Task ExecuteUserAction(this HttpClient client, Session session, User user, JsonElement data)
+    public static async Task ExecuteUserAction(this HttpClient client, Session session, UserControl userControl, JsonElement data)
     {
         var req = new UserActionRequest
         {
-            ControlId = user.ControlId,
+            ControlId = userControl.ControlId,
             Configuration = data
         };
-        var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{user.Id}/actions", req);
-        var resUser = await res.Content.ReadFromJsonAsync<User>(Defaults.Options);
+        var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{userControl.Id}/actions", req);
+        var resUser = await res.Content.ReadFromJsonAsync<UserControl>(Defaults.Options);
 
         Assert.NotNull(resUser);
     }
