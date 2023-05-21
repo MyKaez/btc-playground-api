@@ -60,7 +60,7 @@ public class PowSimulation
             .ConfigureAwait(false).GetAwaiter().GetResult();
         var startTime = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
         var num = 0L;
-        var useConfigs = GetUserSettings(users, fakeHashingPower);
+        var useConfigs = GetUserSettings(users, fakeHashingPower).ToArray();
         var stopwatch = Stopwatch.StartNew();
 
         while (stopwatch.ElapsedMilliseconds < 5_000)
@@ -90,7 +90,7 @@ public class PowSimulation
         var max = BigInteger.Pow(2, 256);
         var difficulty = new BigInteger(configuration.Difficulty!.Value);
         var threshold = max / difficulty;
-        var userConfigs = GetUserSettings(users, totalHash);
+        var userConfigs = GetUserSettings(users, totalHash).ToArray();
 
         _testOutputHelper.WriteLine("total hashing power: " + totalHash);
         _testOutputHelper.WriteLine("difficulty: " + configuration.Difficulty);
@@ -124,22 +124,19 @@ public class PowSimulation
         return line;
     }
 
-    private static IReadOnlyCollection<UserConfig> GetUserSettings(
+    private static IEnumerable<UserConfig> GetUserSettings(
         IEnumerable<(UserControl User, ProofOfWorkUser PowConfig)> users, long totalHash)
     {
-        var dic = new List<UserConfig>();
-
+        UserConfig? config = null;
+        
         foreach (var user in users)
         {
             var turnPercentage = (double)user.PowConfig.HashRate / totalHash;
-            var turnRangeStart = dic.LastOrDefault()?.End ?? 0;
+            var turnRangeStart = config?.End ?? 0;
             var turnRangeEnd = turnPercentage + turnRangeStart;
-            var userConfig = new UserConfig(user.User.Id, turnRangeStart, turnRangeEnd);
 
-            dic.Add(userConfig);
+            yield return config = new UserConfig(user.User.Id, turnRangeStart, turnRangeEnd);
         }
-
-        return dic;
     }
 
     private async Task<(UserControl User, ProofOfWorkUser PowConfig)[]> AddUsers(
@@ -160,7 +157,6 @@ public class PowSimulation
         var second = Random.Shared.NextDouble();
         var third = Random.Shared.NextDouble();
         var total = first + second + third;
-
         var users = new[]
         {
             (await _client.CreateUser(sessionControl, "Kenny"),
@@ -176,10 +172,10 @@ public class PowSimulation
 
     private async Task<ProofOfWork> Prepare(SessionControl sessionControl)
     {
-        var configuration = new ProofOfWork { SecondsUntilBlock = 600 };
-
+        var configuration = new ProofOfWork { SecondsUntilBlock = 10 };
+        
         await _client.PrepareSession(sessionControl, configuration);
-
+        
         return configuration;
     }
 
@@ -187,17 +183,16 @@ public class PowSimulation
         SessionControl sessionControl, ISimulation input, IEnumerable<ProofOfWorkUser> users)
     {
         var session = await _client.StartSession(sessionControl, input);
-
+        
         Assert.NotNull(session);
-
+        
         var update = session.Configuration.Deserialize<ProofOfWork>(Application.Defaults.Options);
-
+        
         Assert.NotNull(update);
         Assert.NotNull(update.Difficulty);
-
         Assert.NotNull(update.Expected);
         Assert.Equal(users.Sum(u => u.HashRate), update.TotalHashRate);
-
+        
         return update;
     }
 }
