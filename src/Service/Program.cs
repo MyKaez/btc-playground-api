@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Application.Serialization;
 using Infrastructure;
 using Infrastructure.Hubs;
-using Service.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +14,8 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     )
 );
-builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.SetApiDefaults());
-builder.Services.AddSignalR().AddJsonProtocol(options => options.PayloadSerializerOptions.SetApiDefaults());
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.SetDefaults());
+builder.Services.AddSignalR().AddJsonProtocol(options => options.PayloadSerializerOptions.SetDefaults());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
