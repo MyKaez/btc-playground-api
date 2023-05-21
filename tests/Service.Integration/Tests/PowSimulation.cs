@@ -98,9 +98,7 @@ public class PowSimulation
         _testOutputHelper.WriteLine("seconds until block: " + configuration.SecondsUntilBlock);
         _testOutputHelper.WriteLine("difficulty: " + configuration.Difficulty);
         _testOutputHelper.WriteLine("expected: " + configuration.Expected);
-        _testOutputHelper.WriteLine("max: " + max.ToString("x"));
-        _testOutputHelper.WriteLine("difficulty: " + difficulty.ToString("x"));
-        _testOutputHelper.WriteLine("threshold: " + threshold.ToString("x"));
+        _testOutputHelper.WriteLine("expected prefix: " + configuration.ExpectedPrefix);
 
         var line = "";
         var numeric = max;
