@@ -96,12 +96,14 @@ public static class HttpClientExtensions
         return reSession;
     }
 
-    public static async Task<Session> StopSession(this HttpClient client, SessionControl session)
+    public static async Task<Session> StopSession(this HttpClient client, SessionControl session,
+        ISimulationEnd? configuration = null)
     {
         var req = new SessionActionRequest
         {
             ControlId = session.ControlId,
-            Action = SessionActionDto.Stop
+            Action = SessionActionDto.Stop,
+            Configuration = configuration?.ToJsonElement()
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/actions", req);
         var reSession = await res.Content.ReadFromJsonAsync<Session>(Application.Defaults.Options);
