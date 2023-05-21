@@ -13,6 +13,11 @@ using Xunit.Abstractions;
 
 namespace Service.Integration.Tests;
 
+public record UserConfig(Guid UserId, double Start, double End)
+{
+    public int HashCount { get; set; }
+}
+
 public class PowSimulation
 {
     private readonly ITestOutputHelper _testOutputHelper;
@@ -50,19 +55,19 @@ public class PowSimulation
     private int EstimateHashesPerSecond(Session sessionControl)
     {
         const int fakeHashingPower = 100;
-        
+
         var users = CreateUsers(sessionControl, fakeHashingPower)
             .ConfigureAwait(false).GetAwaiter().GetResult();
         var startTime = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
         var num = 0L;
-        var useRanges = GetUserSettings(users, fakeHashingPower);
+        var useConfigs = GetUserSettings(users, fakeHashingPower);
         var userHashCount = users.ToDictionary(u => u.User.Id, _ => 0);
         var stopwatch = Stopwatch.StartNew();
 
         while (stopwatch.ElapsedMilliseconds < 5_000)
         {
             num++;
-            Hash(useRanges, startTime, userHashCount, out _);
+            Hash(useConfigs, startTime, out _);
         }
 
         var hashesPerSecond = (int)(num / 5);
@@ -82,12 +87,11 @@ public class PowSimulation
     private string GetBlock((UserControl User, ProofOfWorkUser PowConfig)[] users, ProofOfWork configuration)
     {
         var totalHash = users.Select(u => u.PowConfig.HashRate).Sum();
-        var userRanges = GetUserSettings(users, totalHash);
         var startTime = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
-        var userHashCount = users.ToDictionary(u => u.User.Id, _ => 0);
         var max = BigInteger.Pow(2, 256);
         var difficulty = new BigInteger(configuration.Difficulty!.Value);
         var threshold = max / difficulty;
+        var userConfigs = GetUserSettings(users, totalHash);
 
         _testOutputHelper.WriteLine("total hashing power: " + totalHash);
         _testOutputHelper.WriteLine("difficulty: " + configuration.Difficulty);
@@ -95,15 +99,15 @@ public class PowSimulation
         _testOutputHelper.WriteLine("seconds until block: " + configuration.SecondsUntilBlock);
         _testOutputHelper.WriteLine("expected hash: " + threshold.ToString("X").PadLeft(32, '0'));
         // _testOutputHelper.WriteLine("expected binary: " + threshold.);
-        
+
         string line;
         var wasNegative = false;
 
         var stopwatch = Stopwatch.StartNew();
-        
+
         while (true)
         {
-            line = Hash(userRanges, startTime, userHashCount, out var numeric);
+            line = Hash(userConfigs, startTime, out var numeric);
 
             if (numeric.Sign < 0)
                 wasNegative = true;
@@ -111,7 +115,7 @@ public class PowSimulation
             if (numeric <= threshold)
                 break;
         }
-        
+
         stopwatch.Stop();
         _testOutputHelper.WriteLine("Duration to find block: " + stopwatch.Elapsed);
 
@@ -121,33 +125,29 @@ public class PowSimulation
         return line;
     }
 
-    private static string Hash(
-        Dictionary<Guid, (double Start, double End)> userRanges, string uniqueIdentifier,
-        IDictionary<Guid, int> userHashCount, out BigInteger numeric)
+    private static string Hash(IReadOnlyCollection<UserConfig> users, string uniqueIdentifier, out BigInteger numeric)
     {
         var random = Random.Shared.NextDouble();
-        var userId = userRanges.FirstOrDefault(u => random >= u.Value.Start && random <= u.Value.End).Key;
-        if (userId == Guid.Empty)
-            userId = userRanges.Last().Key;
-        var line = $"{userId}_{uniqueIdentifier}_{userHashCount[userId]}";
-        userHashCount[userId] += 1;
+        var user = users.FirstOrDefault(u => random >= u.Start && random <= u.End) ?? users.Last();
+        var line = $"{user.UserId}_{uniqueIdentifier}_{user.HashCount++}";
         var hash = "0" + line.ComputeSha256Hash();
         numeric = BigInteger.Parse(hash, NumberStyles.AllowHexSpecifier);
         return line;
     }
 
-    private static Dictionary<Guid, (double Start, double End)> GetUserSettings(
-        (UserControl User, ProofOfWorkUser PowConfig)[] users, long totalHash)
+    private static IReadOnlyCollection<UserConfig> GetUserSettings(
+        IEnumerable<(UserControl User, ProofOfWorkUser PowConfig)> users, long totalHash)
     {
-        var dic = new Dictionary<Guid, (double Start, double End)>();
+        var dic = new List<UserConfig>();
 
         foreach (var user in users)
         {
             var tunPercentage = (double)user.PowConfig.HashRate / totalHash;
-            var turnRangeStart = dic.LastOrDefault().Value.End;
-            var turnRangeEnd = (tunPercentage + turnRangeStart);
+            var turnRangeStart = dic.LastOrDefault()?.End ?? 0;
+            var turnRangeEnd = tunPercentage + turnRangeStart;
+            var userConfig = new UserConfig(user.User.Id, turnRangeStart, turnRangeEnd);
 
-            dic.Add(user.User.Id, (turnRangeStart, turnRangeEnd));
+            dic.Add(userConfig);
         }
 
         return dic;
