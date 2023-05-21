@@ -19,7 +19,7 @@ public class PowSimulation
     {
         public int HashCount { get; set; }
     }
-    
+
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
@@ -44,8 +44,7 @@ public class PowSimulation
         var configuration = await CreateConfig(sessionControl, users);
         var line = GetBlock(users, configuration);
         var hex = line.ComputeSha256Hash();
-        
-        
+
 
         // check correct hash
         // announce winner
@@ -99,16 +98,12 @@ public class PowSimulation
         _testOutputHelper.WriteLine("seconds until block: " + configuration.SecondsUntilBlock);
         _testOutputHelper.WriteLine("expected hash: " + threshold.ToString("X"));
 
-        string line;
+        var line = "";
+        var numeric = max;
         var stopwatch = Stopwatch.StartNew();
 
-        while (true)
-        {
-            line = Hash(userConfigs, startTime, out var numeric);
-
-            if (numeric <= threshold)
-                break;
-        }
+        while (numeric <= threshold)
+            line = Hash(userConfigs, startTime, out numeric);
 
         stopwatch.Stop();
         _testOutputHelper.WriteLine("Duration to find block: " + stopwatch.Elapsed);
@@ -125,7 +120,7 @@ public class PowSimulation
         var user = users.FirstOrDefault(u => random >= u.Start && random <= u.End) ?? users.Last();
         var line = $"{user.UserId}_{uniqueIdentifier}_{user.HashCount++}";
         var hash = positiveSign + line.ComputeSha256Hash();
-        numeric = BigInteger.Parse(hash, NumberStyles.AllowHexSpecifier );
+        numeric = BigInteger.Parse(hash, NumberStyles.AllowHexSpecifier);
         return line;
     }
 
@@ -199,7 +194,7 @@ public class PowSimulation
 
         Assert.NotNull(update);
         Assert.NotNull(update.Difficulty);
-        
+
         Assert.NotNull(update.Expected);
         Assert.Equal(users.Sum(u => u.HashRate), update.TotalHashRate);
 
