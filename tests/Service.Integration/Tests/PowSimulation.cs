@@ -15,13 +15,9 @@ namespace Service.Integration.Tests;
 
 public class PowSimulation
 {
-    private const int Xx = 100;
-
     private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _client;
     private readonly TestServer _testServer;
-
-    private int _hashingPower;
 
     public PowSimulation(ITestOutputHelper testOutputHelper)
     {
@@ -34,21 +30,14 @@ public class PowSimulation
     }
 
     [Fact]
-    public async Task X()
+    public async Task Simulate()
     {
         var sessionControl = await _client.CreateSession();
         var (connection, messages) = await _testServer.CreateHub(sessionControl);
-        _hashingPower = EstimateHashesPerSecond(sessionControl);
-        var users = await AddUsers(sessionControl);
+        var hashingPower = EstimateHashesPerSecond(sessionControl);
+        var users = await AddUsers(sessionControl, hashingPower);
         var configuration = await CreateConfig(sessionControl, users);
-
-        var stopwatch = Stopwatch.StartNew();
         var line = GetBlock(users, configuration);
-
-        Assert.NotEmpty(line);
-        stopwatch.Stop();
-        _testOutputHelper.WriteLine("Milliseconds to find block: " + stopwatch.ElapsedMilliseconds);
-
         var hex = line.ComputeSha256Hash();
         var num = BigInteger.Parse(hex, NumberStyles.AllowHexSpecifier).ToString("0");
 
@@ -58,27 +47,26 @@ public class PowSimulation
         await connection.DisposeAsync();
     }
 
-    private int EstimateHashesPerSecond(SessionControl sessionControl)
+    private int EstimateHashesPerSecond(Session sessionControl)
     {
-        var users = AddUsers(sessionControl).ConfigureAwait(false).GetAwaiter().GetResult();
-        var now = DateTime.Now;
+        const int fakeHashingPower = 100;
+        
+        var users = CreateUsers(sessionControl, fakeHashingPower)
+            .ConfigureAwait(false).GetAwaiter().GetResult();
+        var startTime = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
         var num = 0L;
-        var dic = GetUserSettings(users, Xx);
-        var dic2 = users.ToDictionary(u => u.User.Id, _ => 0);
+        var useRanges = GetUserSettings(users, fakeHashingPower);
+        var userHashCount = users.ToDictionary(u => u.User.Id, _ => 0);
         var stopwatch = Stopwatch.StartNew();
 
         while (stopwatch.ElapsedMilliseconds < 5_000)
         {
-            var line = $"{now}_{num++}";
-            var random = Random.Shared.NextDouble();
-            var userId = dic.FirstOrDefault(u => random >= u.Value.Start && random <= u.Value.End).Key;
-            dic2[userId] += 1;
-            var hash = "0" + line.ComputeSha256Hash();
-            BigInteger.Parse(hash, NumberStyles.AllowHexSpecifier);
+            num++;
+            Hash(useRanges, startTime, userHashCount, out _);
         }
 
         var hashesPerSecond = (int)(num / 5);
-        _testOutputHelper.WriteLine($"Estimated hashing power: " + hashesPerSecond);
+        _testOutputHelper.WriteLine("Estimated hashing power: " + hashesPerSecond);
         return hashesPerSecond;
     }
 
@@ -94,12 +82,9 @@ public class PowSimulation
     private string GetBlock((UserControl User, ProofOfWorkUser PowConfig)[] users, ProofOfWork configuration)
     {
         var totalHash = users.Select(u => u.PowConfig.HashRate).Sum();
-        var dic = GetUserSettings(users, totalHash);
+        var userRanges = GetUserSettings(users, totalHash);
         var startTime = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
-        var dic2 = users.ToDictionary(u => u.User.Id, _ => 0);
-
-        string line;
-
+        var userHashCount = users.ToDictionary(u => u.User.Id, _ => 0);
         var max = BigInteger.Pow(2, 256);
         var difficulty = new BigInteger(configuration.Difficulty!.Value);
         var threshold = max / difficulty;
@@ -110,19 +95,15 @@ public class PowSimulation
         _testOutputHelper.WriteLine("seconds until block: " + configuration.SecondsUntilBlock);
         _testOutputHelper.WriteLine("expected hash: " + threshold.ToString("X").PadLeft(32, '0'));
         // _testOutputHelper.WriteLine("expected binary: " + threshold.);
-
+        
+        string line;
         var wasNegative = false;
 
+        var stopwatch = Stopwatch.StartNew();
+        
         while (true)
         {
-            var random = Random.Shared.NextDouble();
-            var userId = dic.FirstOrDefault(u => random >= u.Value.Start && random <= u.Value.End).Key;
-            if (userId == Guid.Empty)
-                userId = dic.Last().Key;
-            line = $"{userId}_{startTime}_{dic2[userId]}";
-            dic2[userId] += 1;
-            var hash = "0" + line.ComputeSha256Hash();
-            var numeric = BigInteger.Parse(hash, NumberStyles.AllowHexSpecifier);
+            line = Hash(userRanges, startTime, userHashCount, out var numeric);
 
             if (numeric.Sign < 0)
                 wasNegative = true;
@@ -130,9 +111,28 @@ public class PowSimulation
             if (numeric <= threshold)
                 break;
         }
+        
+        stopwatch.Stop();
+        _testOutputHelper.WriteLine("Duration to find block: " + stopwatch.Elapsed);
 
+        Assert.NotEmpty(line);
         Assert.False(wasNegative);
 
+        return line;
+    }
+
+    private static string Hash(
+        Dictionary<Guid, (double Start, double End)> userRanges, string uniqueIdentifier,
+        IDictionary<Guid, int> userHashCount, out BigInteger numeric)
+    {
+        var random = Random.Shared.NextDouble();
+        var userId = userRanges.FirstOrDefault(u => random >= u.Value.Start && random <= u.Value.End).Key;
+        if (userId == Guid.Empty)
+            userId = userRanges.Last().Key;
+        var line = $"{userId}_{uniqueIdentifier}_{userHashCount[userId]}";
+        userHashCount[userId] += 1;
+        var hash = "0" + line.ComputeSha256Hash();
+        numeric = BigInteger.Parse(hash, NumberStyles.AllowHexSpecifier);
         return line;
     }
 
@@ -153,9 +153,10 @@ public class PowSimulation
         return dic;
     }
 
-    private async Task<(UserControl User, ProofOfWorkUser PowConfig)[]> AddUsers(SessionControl sessionControl)
+    private async Task<(UserControl User, ProofOfWorkUser PowConfig)[]> AddUsers(SessionControl sessionControl,
+        int hashingPower)
     {
-        var users = await CreateUsers(sessionControl);
+        var users = await CreateUsers(sessionControl, hashingPower);
 
         foreach (var user in users)
             await _client.UpdateUser(sessionControl.Id, user.User, user.PowConfig);
@@ -163,41 +164,25 @@ public class PowSimulation
         return users;
     }
 
-    private async Task<(UserControl User, ProofOfWorkUser PowConfig)[]> CreateUsers(SessionControl sessionControl)
+    private async Task<(UserControl User, ProofOfWorkUser PowConfig)[]> CreateUsers(
+        Session sessionControl, int hashingPower)
     {
-        if (_hashingPower == 0)
+        var first = Random.Shared.NextDouble();
+        var second = Random.Shared.NextDouble();
+        var third = Random.Shared.NextDouble();
+        var total = first + second + third;
+
+        var users = new[]
         {
-            var users = new[]
-            {
-                (await _client.CreateUser(sessionControl, "Kenny"),
-                    new ProofOfWorkUser { HashRate = Random.Shared.Next(100, 999) }),
-                (await _client.CreateUser(sessionControl, "Nico"),
-                    new ProofOfWorkUser { HashRate = Random.Shared.Next(100, 999) }),
-                (await _client.CreateUser(sessionControl, "Danny"),
-                    new ProofOfWorkUser { HashRate = Random.Shared.Next(100, 999) })
-            };
+            (await _client.CreateUser(sessionControl, "Kenny"),
+                new ProofOfWorkUser { HashRate = (int)(hashingPower * (first / total)) }),
+            (await _client.CreateUser(sessionControl, "Nico"),
+                new ProofOfWorkUser { HashRate = (int)(hashingPower * (second / total)) }),
+            (await _client.CreateUser(sessionControl, "Danny"),
+                new ProofOfWorkUser { HashRate = (int)(hashingPower * (third / total)) })
+        };
 
-            return users;
-        }
-        else
-        {
-            var first = Random.Shared.NextDouble();
-            var second = Random.Shared.NextDouble();
-            var third = Random.Shared.NextDouble();
-            var total = first + second + third;
-
-            var users = new[]
-            {
-                (await _client.CreateUser(sessionControl, "Kenny"),
-                    new ProofOfWorkUser { HashRate = (int)(_hashingPower * (first / total)) }),
-                (await _client.CreateUser(sessionControl, "Nico"),
-                    new ProofOfWorkUser { HashRate = (int)(_hashingPower * (second / total)) }),
-                (await _client.CreateUser(sessionControl, "Danny"),
-                    new ProofOfWorkUser { HashRate = (int)(_hashingPower * (third / total)) })
-            };
-
-            return users;
-        }
+        return users;
     }
 
     private async Task<ProofOfWork> Prepare(SessionControl sessionControl)
@@ -221,8 +206,7 @@ public class PowSimulation
         Assert.NotNull(update);
         Assert.NotNull(update.Difficulty);
         Assert.NotNull(update.Expected);
-        // todo: currently this is false because of the users set while doing the hashrate estimate
-        // Assert.Equal(users.Sum(u => u.HashRate), update.TotalHashRate);
+        Assert.Equal(users.Sum(u => u.HashRate), update.TotalHashRate);
 
         return update;
     }
