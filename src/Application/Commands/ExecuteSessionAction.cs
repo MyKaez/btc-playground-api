@@ -47,10 +47,10 @@ public static class ExecuteSessionAction
             var simulator = _simulatorFactory.Create(simulationType);
             var simResult = request.Action switch
             {
-                SessionAction.Prepare => await simulator.Prepare(session, cancellationToken),
-                SessionAction.Start => await simulator.Start(session, cancellationToken),
-                SessionAction.Stop => await simulator.Stop(session, cancellationToken),
-                SessionAction.Reset => await simulator.Reset(session, cancellationToken),
+                SessionAction.Prepare => await simulator.SessionPrepare(session, config, cancellationToken),
+                SessionAction.Start => await simulator.SessionStart(session, config, cancellationToken),
+                SessionAction.Stop => await simulator.SessionStop(session, config, cancellationToken),
+                SessionAction.Reset => await simulator.SessionReset(session, config, cancellationToken),
                 _ => throw new UnreachableException()
             };
 

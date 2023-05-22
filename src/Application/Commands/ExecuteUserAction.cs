@@ -1,7 +1,10 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using Application.Handlers;
 using Application.Models;
+using Application.Serialization;
 using Application.Services;
+using Application.Simulations;
 using Domain.Models;
 using Domain.Simulations;
 
@@ -12,7 +15,7 @@ public static class ExecuteUserAction
     public record Command(Guid SessionId, Guid UserId, Guid UserControlId) : Request<User>
     {
         public UserStatus Status { get; init; }
-        
+
         public JsonElement Configuration { get; init; }
     }
 
@@ -20,11 +23,13 @@ public static class ExecuteUserAction
     {
         private readonly ISessionService _sessionService;
         private readonly IUserService _userService;
+        private readonly ISimulatorFactory _simulatorFactory;
 
-        public Handler(ISessionService sessionService, IUserService userService)
+        public Handler(ISessionService sessionService, IUserService userService, ISimulatorFactory simulatorFactory)
         {
             _sessionService = sessionService;
             _userService = userService;
+            _simulatorFactory = simulatorFactory;
         }
 
         public override async Task<RequestResult<User>> Handle(Command request, CancellationToken cancellationToken)
@@ -42,32 +47,38 @@ public static class ExecuteUserAction
             if (user.ControlId != request.UserControlId)
                 return NotAuthorized();
 
+            var config = request.Configuration;
+            var simulationType = session.Configuration?.FromJsonElement<Simulation>()?.SimulationType;
+
+            if (simulationType is not null)
+            {
+                var simulator = _simulatorFactory.Create(simulationType);
+                var simResult = request.Status switch
+                {
+                    UserStatus.NotReady => await simulator.UserNotReady(session, config, cancellationToken),
+                    UserStatus.Ready => await simulator.UserReady(session, config, cancellationToken),
+                    UserStatus.Done => await simulator.UserDone(session, config, cancellationToken),
+                    _ => throw new UnreachableException()
+                };
+
+                if (simResult is not null)
+                {
+                    if (simResult.IsValid)
+                        config = simResult.Result;
+                    else
+                        return new RequestResult<User>(simResult.Error!);
+                }
+            }
+
             var update = new UserUpdate
             {
                 SessionId = session.Id,
                 UserId = user.Id,
                 Status = request.Status,
-                Configuration = request.Configuration
+                Configuration = config
             };
 
             user = await _userService.Update(update, cancellationToken);
-
-            if (request.Status == UserStatus.Done)
-            {
-                var end = request.Configuration.Deserialize<ProofOfWorkBlock>(Defaults.Options);
-
-                if (end is null)
-                    throw new NotSupportedException();
-                
-                var sessionUpdate = new SessionUpdate
-                {
-                    SessionId = session.Id,
-                    Action = SessionAction.Stop,
-                    Configuration = request.Configuration
-                };
-                
-                await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
-            }
 
             var res = new RequestResult<User>(user!);
 

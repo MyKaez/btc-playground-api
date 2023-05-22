@@ -6,11 +6,44 @@ namespace Application.Simulations;
 
 public interface ISimulator
 {
-    Task<RequestResult<JsonElement>?> Prepare(Session session, CancellationToken cancellationToken);
-    
-    Task<RequestResult<JsonElement>?> Start(Session session, CancellationToken cancellationToken);
-    
-    Task<RequestResult<JsonElement>?> Stop(Session session, CancellationToken cancellationToken);
-    
-    Task<RequestResult<JsonElement>?> Reset(Session session, CancellationToken cancellationToken);
+    Task<RequestResult<JsonElement>?> SessionPrepare(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
+
+    Task<RequestResult<JsonElement>?> SessionStart(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
+
+    Task<RequestResult<JsonElement>?> SessionStop(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
+
+    Task<RequestResult<JsonElement>?> SessionReset(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
+
+    Task<RequestResult<JsonElement>?> UserNotReady(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
+
+    Task<RequestResult<JsonElement>?> UserReady(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
+
+    Task<RequestResult<JsonElement>?> UserDone(Session session, JsonElement config, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<RequestResult<JsonElement>?>(null);
+    }
 }
