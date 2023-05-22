@@ -51,16 +51,16 @@ public static class HttpClientExtensions
         return user;
     }
 
-    public static async Task UpdateUser(this HttpClient client, Guid sessionId, UserControl userControlControl,
+    public static async Task UpdateUser(this HttpClient client, Guid sessionId, UserControl userControl,
         ISimulationUser configuration)
     {
         var req = new UserActionRequest
         {
-            ControlId = userControlControl.ControlId,
+            ControlId = userControl.ControlId,
             Status = UserStatusDto.Ready,
             Configuration = configuration.ToJsonElement()
         };
-        var res = await client.PostAsJsonAsync($"v1/sessions/{sessionId}/users/{userControlControl.Id}/actions", req);
+        var res = await client.PostAsJsonAsync($"v1/sessions/{sessionId}/users/{userControl.Id}/actions", req);
         var user = await res.Content.ReadFromJsonAsync<User>(Application.Defaults.Options);
 
         Assert.NotNull(user);
