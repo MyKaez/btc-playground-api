@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Application.Models;
+﻿namespace Application.Models;
 
 public abstract class RequestResult
 {

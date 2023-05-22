@@ -1,8 +1,10 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using Application.Handlers;
 using Application.Models;
 using Application.Serialization;
 using Application.Services;
+using Application.Simulations;
 using Domain.Models;
 using Domain.Simulations;
 
@@ -18,12 +20,12 @@ public static class ExecuteSessionAction
     public class Handler : RequestHandler<Command, Session>
     {
         private readonly ISessionService _sessionService;
-        private readonly IUserService _userService;
+        private readonly ISimulatorFactory _simulatorFactory;
 
-        public Handler(ISessionService sessionService, IUserService userService)
+        public Handler(ISessionService sessionService, ISimulatorFactory simulatorFactory)
         {
             _sessionService = sessionService;
-            _userService = userService;
+            _simulatorFactory = simulatorFactory;
         }
 
         public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
@@ -37,22 +39,27 @@ public static class ExecuteSessionAction
                 return NotAuthorized();
 
             var config = request.Configuration;
-            if (request.Action == SessionAction.Start)
+            var simulationType = config.FromJsonElement<Simulation>()?.SimulationType;
+
+            if (simulationType is null)
+                return BadRequest("No SimulationType was given");
+
+            var simulator = _simulatorFactory.Create(simulationType);
+            var simResult = request.Action switch
             {
-                var users = await _userService.GetBySessionId(session.Id, cancellationToken);
-                var configs = users
-                    .Select(u => u.Configuration)
-                    .Where(u => u.HasValue)
-                    .Select(c => c?.Deserialize<ProofOfWorkUser>(Defaults.Options)!)
-                    .ToArray();
-                var pow = session.Configuration?.Deserialize<ProofOfWork>(Defaults.Options);
+                SessionAction.Prepare => await simulator.Prepare(session, cancellationToken),
+                SessionAction.Start => await simulator.Start(session, cancellationToken),
+                SessionAction.Stop => await simulator.Stop(session, cancellationToken),
+                SessionAction.Reset => await simulator.Reset(session, cancellationToken),
+                _ => throw new UnreachableException()
+            };
 
-                if (pow is null)
-                    throw new NotSupportedException();
-
-                ProofOfWork.Calculate(pow, configs.Sum(c => c.HashRate));
-                
-                config = pow.ToJsonElement();
+            if (simResult is not null)
+            {
+                if (simResult.IsValid)
+                    config = simResult.Result;
+                else
+                    return new RequestResult<Session>(simResult.Error!);
             }
 
             var update = new SessionUpdate

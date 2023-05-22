@@ -9,6 +9,11 @@ public static class JsonExtensions
     {
         return JsonSerializer.SerializeToElement(obj, Defaults.Options);
     }
+    
+    public static T? FromJsonElement<T>(this JsonElement obj)
+    {
+        return obj.Deserialize<T>(Defaults.Options);
+    }
 
     public static JsonSerializerOptions SetDefaults(this JsonSerializerOptions options)
     {

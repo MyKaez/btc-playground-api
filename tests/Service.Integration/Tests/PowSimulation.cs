@@ -78,7 +78,7 @@ public class PowSimulation
         return hashesPerSecond;
     }
 
-    private async Task<ProofOfWork> CreateConfig(
+    private async Task<ProofOfWorkSession> CreateConfig(
         SessionControl sessionControl, IEnumerable<(UserControl User, ProofOfWorkUser PowConfig)> users)
     {
         var configuration = await Prepare(sessionControl);
@@ -87,7 +87,7 @@ public class PowSimulation
         return configuration;
     }
 
-    private ProofOfWorkBlock GetBlock((UserControl User, ProofOfWorkUser PowConfig)[] users, ProofOfWork configuration)
+    private ProofOfWorkBlock GetBlock((UserControl User, ProofOfWorkUser PowConfig)[] users, ProofOfWorkSession configuration)
     {
         var totalHash = users.Select(u => u.PowConfig.HashRate).Sum();
         var userConfigs = GetUserSettings(users, totalHash).ToArray();
@@ -99,7 +99,7 @@ public class PowSimulation
         _testOutputHelper.WriteLine("threshold: " + configuration.Threshold);
 
         var line = "";
-        var numeric = ProofOfWork.Max;
+        var numeric = ProofOfWorkSession.Max;
         var userId = Guid.Empty;
         var threshold = BigInteger.Parse(configuration.Threshold!, NumberStyles.AllowHexSpecifier);
         var stopwatch = Stopwatch.StartNew();
@@ -175,23 +175,23 @@ public class PowSimulation
         return users;
     }
 
-    private async Task<ProofOfWork> Prepare(SessionControl sessionControl)
+    private async Task<ProofOfWorkSession> Prepare(SessionControl sessionControl)
     {
-        var configuration = new ProofOfWork { SecondsUntilBlock = 10 };
+        var configuration = new ProofOfWorkSession { SecondsUntilBlock = 10 };
 
         await _client.PrepareSession(sessionControl, configuration);
 
         return configuration;
     }
 
-    private async Task<ProofOfWork> Start(
+    private async Task<ProofOfWorkSession> Start(
         SessionControl sessionControl, ISimulation input, IEnumerable<ProofOfWorkUser> users)
     {
         var session = await _client.StartSession(sessionControl, input);
 
         Assert.NotNull(session);
 
-        var update = session.Configuration.Deserialize<ProofOfWork>(Application.Defaults.Options);
+        var update = session.Configuration.Deserialize<ProofOfWorkSession>(Application.Defaults.Options);
 
         Assert.NotNull(update);
         Assert.NotNull(update.Difficulty);

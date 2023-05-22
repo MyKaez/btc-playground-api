@@ -2,7 +2,7 @@
 
 namespace Domain.Simulations;
 
-public class ProofOfWork : ISimulation
+public class ProofOfWorkSession : ISimulation
 {
     public static readonly BigInteger Max = BigInteger.Pow(2, 255);
 
@@ -18,7 +18,7 @@ public class ProofOfWork : ISimulation
 
     public string? Threshold { get; set; }
 
-    public static void Calculate(ProofOfWork pow, int totalHashRate)
+    public static void Calculate(ProofOfWorkSession pow, int totalHashRate)
     {
         pow.TotalHashRate = totalHashRate;
         pow.Difficulty = pow.TotalHashRate * pow.SecondsUntilBlock;

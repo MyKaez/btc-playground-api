@@ -5,5 +5,5 @@ namespace Application;
 
 public class Defaults
 {
-    public static JsonSerializerOptions Options = new JsonSerializerOptions().SetDefaults();
+    public static readonly JsonSerializerOptions Options = new JsonSerializerOptions().SetDefaults();
 }
