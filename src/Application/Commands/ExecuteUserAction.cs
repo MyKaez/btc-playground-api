@@ -48,9 +48,9 @@ public static class ExecuteUserAction
                 return NotAuthorized();
 
             var config = request.Configuration;
-            var simulationType = session.Configuration?.FromJsonElement<Simulation>()?.SimulationType;
+            var simulationType = session.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
 
-            if (simulationType is not null)
+            if (simulationType != "")
             {
                 var simulator = _simulatorFactory.Create(simulationType);
                 var simResult = request.Status switch
