@@ -3,6 +3,7 @@ using Application.Handlers;
 using Application.Models;
 using Application.Services;
 using Domain.Models;
+using Domain.Simulations;
 
 namespace Application.Commands;
 
@@ -53,12 +54,18 @@ public static class ExecuteUserAction
 
             if (request.Status == UserStatus.Done)
             {
+                var end = request.Configuration.Deserialize<ProofOfWorkEnd>(Defaults.Options);
+
+                if (end is null)
+                    throw new NotSupportedException();
+                
                 var sessionUpdate = new SessionUpdate
                 {
                     SessionId = session.Id,
                     Action = SessionAction.Stop,
-                    Configuration = session.Configuration!.Value
+                    Configuration = request.Configuration
                 };
+                
                 await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
             }
 
