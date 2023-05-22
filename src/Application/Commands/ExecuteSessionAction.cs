@@ -50,10 +50,8 @@ public static class ExecuteSessionAction
                 if (pow is null)
                     throw new NotSupportedException();
 
-                pow.TotalHashRate = configs.Sum(c => c.HashRate);
-                pow.Difficulty = pow.TotalHashRate * pow.SecondsUntilBlock;
-                pow.Expected = 1 / pow.Difficulty;
-
+                ProofOfWork.Calculate(pow, configs.Sum(c => c.HashRate));
+                
                 config = pow.ToJsonElement();
             }
 

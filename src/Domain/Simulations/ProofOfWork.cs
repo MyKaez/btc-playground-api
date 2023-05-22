@@ -1,10 +1,14 @@
-﻿namespace Domain.Simulations;
+﻿using System.Numerics;
+
+namespace Domain.Simulations;
 
 public class ProofOfWork : ISimulation
 {
+    public static readonly BigInteger Max = BigInteger.Pow(2, 255);
+
     public string SimulationType => "proofOfWork";
 
-    public int SecondsUntilBlock { get; set; }
+    public int SecondsUntilBlock { get; init; }
 
     public long? TotalHashRate { get; set; }
 
@@ -12,29 +16,22 @@ public class ProofOfWork : ISimulation
 
     public double? Expected { get; set; }
 
-    public string ExpectedPrefix
+    public string? Threshold { get; set; }
+
+    public static void Calculate(ProofOfWork pow, int totalHashRate)
     {
-        get
-        {
-            var expected = Expected ?? 1;
-            var iterations = 0;
+        pow.TotalHashRate = totalHashRate;
+        pow.Difficulty = pow.TotalHashRate * pow.SecondsUntilBlock;
+        pow.Expected = 1 / pow.Difficulty;
+        pow.Threshold = CalculateThreshold(pow.Difficulty!.Value);
+    }
 
-            while (expected < 1)
-            {
-                iterations++;
-                expected *= 10;
-            }
+    private static string CalculateThreshold(double powDifficulty)
+    {
+        var difficulty = new BigInteger(powDifficulty);
+        var threshold = Max / difficulty;
+        var res = threshold.ToString("x").PadLeft(64, '0');
 
-            if (!(Math.Abs(expected - 1) > 0.1))
-                return "".PadLeft(iterations, '0');
-
-            var x = (int)Math.Round(expected, MidpointRounding.ToNegativeInfinity);
-            var y = "0123456789abcdef";
-            var suffix = y[x].ToString();
-            
-            iterations--;
-
-            return "".PadLeft(iterations, '0') + suffix;
-        }
+        return res;
     }
 }

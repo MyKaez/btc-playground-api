@@ -89,20 +89,18 @@ public class PowSimulation
     private ProofOfWorkBlock GetBlock((UserControl User, ProofOfWorkUser PowConfig)[] users, ProofOfWork configuration)
     {
         var totalHash = users.Select(u => u.PowConfig.HashRate).Sum();
-        var max = BigInteger.Pow(2, 255);
-        var difficulty = new BigInteger(configuration.Difficulty!.Value);
-        var threshold = max / difficulty;
         var userConfigs = GetUserSettings(users, totalHash).ToArray();
 
         _testOutputHelper.WriteLine("total hashing power: " + totalHash);
         _testOutputHelper.WriteLine("seconds until block: " + configuration.SecondsUntilBlock);
         _testOutputHelper.WriteLine("difficulty: " + configuration.Difficulty);
         _testOutputHelper.WriteLine("expected: " + configuration.Expected);
-        _testOutputHelper.WriteLine("expected prefix: " + configuration.ExpectedPrefix);
+        _testOutputHelper.WriteLine("threshold: " + configuration.Threshold);
 
         var line = "";
-        var numeric = max;
+        var numeric = ProofOfWork.Max;
         var userId = Guid.Empty;
+        var threshold = BigInteger.Parse(configuration.Threshold!, NumberStyles.AllowHexSpecifier);
         var stopwatch = Stopwatch.StartNew();
 
         while (numeric >= threshold)
