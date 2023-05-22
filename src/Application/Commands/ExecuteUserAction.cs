@@ -56,7 +56,7 @@ public static class ExecuteUserAction
                 var simResult = request.Status switch
                 {
                     UserStatus.NotReady => await simulator.UserNotReady(session, config, cancellationToken),
-                    UserStatus.Ready => await simulator.UserReady(session, config, cancellationToken),
+                    UserStatus.Ready => await simulator.UserReady(session, user, config, cancellationToken),
                     UserStatus.Done => await simulator.UserDone(session, config, cancellationToken),
                     _ => throw new UnreachableException()
                 };

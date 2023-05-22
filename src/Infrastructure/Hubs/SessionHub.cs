@@ -1,4 +1,8 @@
-﻿using Infrastructure.Services;
+﻿using Application.Serialization;
+using Application.Services;
+using Application.Simulations;
+using Domain.Simulations;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
@@ -12,12 +16,17 @@ namespace Infrastructure.Hubs;
 public class SessionHub : Hub
 {
     private readonly IConnectionService _connectionService;
+    private readonly ISessionService _sessionService;
+    private readonly ISimulatorFactory _simulatorFactory;
     private readonly ILogger<SessionHub> _logger;
 
-    public SessionHub(ILogger<SessionHub> logger, IConnectionService connectionService)
+    public SessionHub(ILogger<SessionHub> logger, IConnectionService connectionService, ISessionService sessionService,
+        ISimulatorFactory simulatorFactory)
     {
         _logger = logger;
         _connectionService = connectionService;
+        _sessionService = sessionService;
+        _simulatorFactory = simulatorFactory;
     }
 
     public override Task OnConnectedAsync()
@@ -42,10 +51,22 @@ public class SessionHub : Hub
                 connection.SessionId, Context.ConnectionId);
 
             if (connection.UserId.HasValue)
+            {
                 await Clients.All.SendAsync(connection.SessionId + ":DeleteUser", connection.UserId);
+
+                var session = await _sessionService.GetById(connection.SessionId, CancellationToken.None);
+                var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
+
+                if (simulationType != "")
+                {
+                    var simulator = _simulatorFactory.Create(simulationType);
+
+                    await simulator.UserDelete(session, connection.UserId.Value, CancellationToken.None);
+                }
+            }
         }
 
-        await  base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 
     /// <summary>

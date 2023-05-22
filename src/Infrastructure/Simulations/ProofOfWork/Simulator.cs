@@ -5,7 +5,6 @@ using Application.Models;
 using Application.Services;
 using Application.Simulations;
 using Domain.Models;
-using Domain.Simulations;
 using Infrastructure.Simulations.Models;
 
 namespace Infrastructure.Simulations.ProofOfWork;
@@ -19,6 +18,22 @@ public class Simulator : ISimulator
     {
         _userService = userService;
         _sessionService = sessionService;
+    }
+
+    public async Task<RequestResult<JsonElement>?> SessionPrepare(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        var preparation = new ProofOfWorkSession { SecondsUntilBlock = 10 };
+        var sessionUpdate = new SessionUpdate
+        {
+            SessionId = session.Id,
+            Action = SessionAction.Stop,
+            Configuration = preparation.ToJsonElement()
+        };
+
+        await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
+
+        return new RequestResult<JsonElement>(sessionUpdate.Configuration);
     }
 
     public async Task<RequestResult<JsonElement>?> SessionStart(Session session, JsonElement config,
@@ -41,6 +56,30 @@ public class Simulator : ISimulator
         var res = sessionConfig.ToJsonElement();
 
         return new RequestResult<JsonElement>(res);
+    }
+
+    public async Task<RequestResult<JsonElement>?> UserReady(
+        Session session, User user, JsonElement config, CancellationToken cancellationToken)
+    {
+        var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
+        var userConfig = config.FromJsonElement<ProofOfWorkUser>();
+        var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
+        var restUsers = sessionUsers
+            .Where(u => u.Id != user.Id)
+            .Where(u => u.Status == UserStatus.Ready)
+            .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
+
+        ProofOfWorkSession.Calculate(preparation, restUsers + userConfig!.HashRate);
+
+        var sessionUpdate = new SessionUpdate
+        {
+            SessionId = session.Id,
+            Configuration = preparation.ToJsonElement()
+        };
+
+        await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
+
+        return new RequestResult<JsonElement>(config);
     }
 
     public async Task<RequestResult<JsonElement>?> UserDone(Session session, JsonElement config,
@@ -69,5 +108,25 @@ public class Simulator : ISimulator
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
 
         return new RequestResult<JsonElement>(config);
+    }
+
+    public async Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken)
+    {
+        var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
+        var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
+        var restUsers = sessionUsers
+            .Where(u => u.Id != userId)
+            .Where(u => u.Status == UserStatus.Ready)
+            .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
+
+        ProofOfWorkSession.Calculate(preparation, restUsers);
+
+        var sessionUpdate = new SessionUpdate
+        {
+            SessionId = session.Id,
+            Configuration = preparation.ToJsonElement()
+        };
+
+        await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
     }
 }

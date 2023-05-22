@@ -19,12 +19,22 @@ public class ProofOfWorkSession : ISimulation
 
     public string? Threshold { get; set; }
 
-    public static void Calculate(ProofOfWorkSession pow, int totalHashRate)
+    public static void Calculate(ProofOfWorkSession pow, long totalHashRate)
     {
         pow.TotalHashRate = totalHashRate;
-        pow.Difficulty = pow.TotalHashRate * pow.SecondsUntilBlock;
-        pow.Expected = 1 / pow.Difficulty;
-        pow.Threshold = CalculateThreshold(pow.Difficulty!.Value);
+
+        if (totalHashRate == 0 || pow.SecondsUntilBlock == 0)
+        {
+            pow.Difficulty = null;
+            pow.Expected = null;
+            pow.Threshold = null;
+        }
+        else
+        {
+            pow.Difficulty = pow.TotalHashRate * pow.SecondsUntilBlock;
+            pow.Expected = 1 / pow.Difficulty;
+            pow.Threshold = CalculateThreshold(pow.Difficulty!.Value);
+        }
     }
 
     private static string CalculateThreshold(double powDifficulty)

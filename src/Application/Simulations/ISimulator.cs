@@ -36,7 +36,7 @@ public interface ISimulator
         return Task.FromResult<RequestResult<JsonElement>?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> UserReady(Session session, JsonElement config,
+    Task<RequestResult<JsonElement>?> UserReady(Session session, User user, JsonElement config,
         CancellationToken cancellationToken)
     {
         return Task.FromResult<RequestResult<JsonElement>?>(null);
@@ -46,4 +46,6 @@ public interface ISimulator
     {
         return Task.FromResult<RequestResult<JsonElement>?>(null);
     }
+
+    Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken);
 }
