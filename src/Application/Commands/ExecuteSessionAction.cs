@@ -39,27 +39,27 @@ public static class ExecuteSessionAction
                 return NotAuthorized();
 
             var config = request.Configuration;
-            var simulationType = config.FromJsonElement<Simulation>()?.SimulationType;
+            var simulationType = config.FromJsonElement<Simulation>()?.SimulationType ??"";
 
-            if (simulationType is null)
-                return BadRequest("No SimulationType was given");
-
-            var simulator = _simulatorFactory.Create(simulationType);
-            var simResult = request.Action switch
+            if (simulationType != "")
             {
-                SessionAction.Prepare => await simulator.SessionPrepare(session, config, cancellationToken),
-                SessionAction.Start => await simulator.SessionStart(session, config, cancellationToken),
-                SessionAction.Stop => await simulator.SessionStop(session, config, cancellationToken),
-                SessionAction.Reset => await simulator.SessionReset(session, config, cancellationToken),
-                _ => throw new UnreachableException()
-            };
+                var simulator = _simulatorFactory.Create(simulationType);
+                var simResult = request.Action switch
+                {
+                    SessionAction.Prepare => await simulator.SessionPrepare(session, config, cancellationToken),
+                    SessionAction.Start => await simulator.SessionStart(session, config, cancellationToken),
+                    SessionAction.Stop => await simulator.SessionStop(session, config, cancellationToken),
+                    SessionAction.Reset => await simulator.SessionReset(session, config, cancellationToken),
+                    _ => throw new UnreachableException()
+                };
 
-            if (simResult is not null)
-            {
-                if (simResult.IsValid)
-                    config = simResult.Result;
-                else
-                    return new RequestResult<Session>(simResult.Error!);
+                if (simResult is not null)
+                {
+                    if (simResult.IsValid)
+                        config = simResult.Result;
+                    else
+                        return new RequestResult<Session>(simResult.Error!);
+                }
             }
 
             var update = new SessionUpdate
