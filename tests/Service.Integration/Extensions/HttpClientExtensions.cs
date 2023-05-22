@@ -119,6 +119,7 @@ public static class HttpClientExtensions
         var req = new UserActionRequest
         {
             ControlId = userControl.ControlId,
+            Status = userControl.Status,
             Configuration = data
         };
         var res = await client.PostAsJsonAsync($"v1/sessions/{session.Id}/users/{userControl.Id}/actions", req);

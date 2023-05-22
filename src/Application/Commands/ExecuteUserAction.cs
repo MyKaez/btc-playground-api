@@ -51,6 +51,17 @@ public static class ExecuteUserAction
 
             user = await _userService.Update(update, cancellationToken);
 
+            if (request.Status == UserStatus.Done)
+            {
+                var sessionUpdate = new SessionUpdate
+                {
+                    SessionId = session.Id,
+                    Action = SessionAction.Stop,
+                    Configuration = session.Configuration!.Value
+                };
+                await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
+            }
+
             var res = new RequestResult<User>(user!);
 
             return res;

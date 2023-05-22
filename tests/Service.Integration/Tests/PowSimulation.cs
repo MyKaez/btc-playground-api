@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Integration.Extensions;
 using Service.Integration.Models;
+using Service.Models;
 using Shared;
 using Xunit.Abstractions;
 
@@ -46,14 +47,14 @@ public class PowSimulation
         var users = await AddUsers(sessionControl, hashingPower);
         var configuration = await CreateConfig(sessionControl, users);
         var block = GetBlock(users, configuration);
-        var user = users.First(u => u.User.Id == block.UserId);
+        var (user, _) = users.First(u => u.User.Id == block.UserId);
+        user.Status = UserStatusDto.Done;
 
-        await _client.ExecuteUserAction(sessionControl, user.User, block.ToJsonElement());
+        await _client.ExecuteUserAction(sessionControl, user, block.ToJsonElement());
         await connection.DisposeAsync();
 
         Assert.Contains(messages, msg => msg.Contains(block.Hash));
-    // todo: this needs to turn green!
-        // Assert.Contains(messages, msg => msg.Contains("stopped"));
+        Assert.Contains(messages, msg => msg.Contains("stopped"));
     }
 
     private int EstimateHashesPerSecond(Session sessionControl)
