@@ -3,6 +3,7 @@ using System.Text.Json;
 using Application.Serialization;
 using Domain.Models;
 using Domain.Simulations;
+using Infrastructure.Simulations.Models;
 using Service.Integration.Models;
 using Service.Models;
 using Service.Models.Requests;

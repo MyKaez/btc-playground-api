@@ -6,6 +6,7 @@ using Application.Services;
 using Application.Simulations;
 using Domain.Models;
 using Domain.Simulations;
+using Infrastructure.Simulations.Models;
 
 namespace Infrastructure.Simulations.ProofOfWork;
 

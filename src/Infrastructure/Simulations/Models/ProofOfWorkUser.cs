@@ -1,4 +1,4 @@
-﻿namespace Domain.Simulations;
+﻿namespace Infrastructure.Simulations.Models;
 
 public class ProofOfWorkUser : ISimulationUser
 {

@@ -5,6 +5,7 @@ using System.Text.Json;
 using Application.Extensions;
 using Application.Serialization;
 using Domain.Simulations;
+using Infrastructure.Simulations.Models;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Service.Integration.Extensions;

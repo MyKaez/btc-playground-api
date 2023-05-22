@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
+using Domain.Simulations;
 
-namespace Domain.Simulations;
+namespace Infrastructure.Simulations.Models;
 
 public class ProofOfWorkSession : ISimulation
 {
