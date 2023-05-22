@@ -54,7 +54,7 @@ public static class ExecuteUserAction
 
             if (request.Status == UserStatus.Done)
             {
-                var end = request.Configuration.Deserialize<ProofOfWorkEnd>(Defaults.Options);
+                var end = request.Configuration.Deserialize<ProofOfWorkBlock>(Defaults.Options);
 
                 if (end is null)
                     throw new NotSupportedException();
