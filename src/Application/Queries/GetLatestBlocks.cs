@@ -18,7 +18,8 @@ public static class GetLatestBlocks
             _blockService = blockService;
         }
 
-        public override async Task<RequestResult<Block[]>> Handle(Query request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Block[], IRequestError>> Handle(
+            Query request, CancellationToken cancellationToken)
         {
             var blocks = await _blockService.GetBlocks(cancellationToken);
 
@@ -26,9 +27,8 @@ public static class GetLatestBlocks
                 return NotFound();
 
             var items = blocks.ToArray();
-            var res = new RequestResult<Block[]>(items);
 
-            return res;
+            return items;
         }
     }
 }

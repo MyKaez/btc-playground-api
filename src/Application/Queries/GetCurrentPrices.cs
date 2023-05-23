@@ -18,7 +18,8 @@ public static class GetCurrentPrices
             _priceService = priceService;
         }
 
-        public override async Task<RequestResult<Price[]>> Handle(Query request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Price[], IRequestError>> Handle(
+            Query request, CancellationToken cancellationToken)
         {
             var prices = await _priceService.GetCurrentPrices(cancellationToken);
 
@@ -26,9 +27,8 @@ public static class GetCurrentPrices
                 return NotFound();
 
             var items = prices.ToArray();
-            var res = new RequestResult<Price[]>(items);
 
-            return res;
+            return items;
         }
     }
 }

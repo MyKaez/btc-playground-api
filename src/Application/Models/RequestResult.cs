@@ -1,29 +1,31 @@
 ﻿namespace Application.Models;
 
-public abstract class RequestResult
+public class RequestResult<TValue, TError>
 {
-    public IRequestError? Error { get; init; }
-
-    public bool IsValid { get; protected set; }
-    
-    public abstract object? Value { get; }
-}
-
-public class RequestResult<T> : RequestResult
-{
-    public RequestResult(IRequestError error)
+    private RequestResult(TError error)
     {
         Error = error;
         IsValid = false;
     }
 
-    public RequestResult(T result)
+    private RequestResult(TValue value)
     {
-        Result = result;
+        Value = value;
         IsValid = true;
     }
 
-    public T? Result { get; init; }
+    public TValue? Value { get; }
 
-    public override object? Value => Result;
+    public TError? Error { get; }
+
+    public bool IsValid { get; }
+
+    public static implicit operator RequestResult<TValue, TError>(TValue value) => new(value);
+
+    public static implicit operator RequestResult<TValue, TError>(TError error) => new(error);
+
+    public TResult Match<TResult>(Func<TValue, TResult> success, Func<TError, TResult> error)
+    {
+        return IsValid ? success(Value!) : error(Error!);
+    }
 }

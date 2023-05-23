@@ -1,4 +1,5 @@
-﻿using Application.Handlers;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Application.Handlers;
 using Application.Models;
 using Application.Services;
 using Domain.Models;
@@ -19,8 +20,9 @@ public static class GetSessionUsers
             _sessionService = sessionService;
             _userService = userService;
         }
-        
-        public override async Task<RequestResult<User[]>> Handle(Query request, CancellationToken cancellationToken)
+
+        public override async Task<RequestResult<User[], IRequestError>> Handle(
+            Query request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
@@ -29,7 +31,7 @@ public static class GetSessionUsers
 
             var users = await _userService.GetBySessionId(session.Id, cancellationToken);
 
-            return new RequestResult<User[]>(users);
+            return users;
         }
     }
 }

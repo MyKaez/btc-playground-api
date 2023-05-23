@@ -18,16 +18,12 @@ public static class GetSession
             _sessionService = sessionService;
         }
 
-        public override async Task<RequestResult<Session>> Handle(Query request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Session, IRequestError>> Handle(
+            Query request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.Id, cancellationToken);
 
-            if (session is null)
-                return NotFound();
-
-            var res = new RequestResult<Session>(session);
-
-            return res;
+            return session ?? NotFound();
         }
     }
 }

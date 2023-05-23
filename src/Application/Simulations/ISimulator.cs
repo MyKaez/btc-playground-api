@@ -6,46 +6,37 @@ namespace Application.Simulations;
 
 public interface ISimulator
 {
-    Task<RequestResult<JsonElement>?> SessionPrepare(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    Task<JsonElement?> SessionPrepare(Session session, JsonElement config, CancellationToken cancellationToken)
     {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
+        return Task.FromResult<JsonElement?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> SessionStart(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    Task<JsonElement?> SessionStart(Session session, JsonElement config, CancellationToken cancellationToken)
     {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
+        return Task.FromResult<JsonElement?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> SessionStop(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    Task<JsonElement?> SessionStop(Session session, JsonElement config, CancellationToken cancellationToken)
     {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
+        return Task.FromResult<JsonElement?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> SessionReset(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    Task<JsonElement?> SessionReset(Session session, JsonElement config, CancellationToken cancellationToken)
     {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
+        return Task.FromResult<JsonElement?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> UserNotReady(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    Task<JsonElement?> UserNotReady(Session session, JsonElement config, CancellationToken cancellationToken)
     {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
+        return Task.FromResult<JsonElement?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> UserReady(Session session, User user, JsonElement config,
-        CancellationToken cancellationToken)
+    Task<JsonElement?> UserReady(Session session, User user, JsonElement config, CancellationToken cancellationToken)
     {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
+        return Task.FromResult<JsonElement?>(null);
     }
 
-    Task<RequestResult<JsonElement>?> UserDone(Session session, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<RequestResult<JsonElement>?>(null);
-    }
+    Task<JsonElement> UserDone(Session session, JsonElement config, CancellationToken cancellationToken);
 
     Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken);
 }

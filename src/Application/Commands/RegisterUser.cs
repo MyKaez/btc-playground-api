@@ -20,7 +20,8 @@ public static class RegisterUser
             _userService = userService;
         }
 
-        public override async Task<RequestResult<User>> Handle(Command request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<User, IRequestError>> Handle(
+            Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
@@ -28,9 +29,8 @@ public static class RegisterUser
                 return NotFound();
 
             var user = await _userService.Create(session, request.UserName, cancellationToken);
-            var res = new RequestResult<User>(user);
-
-            return res;
+            
+            return user;
         }
     }
 }

@@ -19,16 +19,12 @@ public static class RegisterSession
             _sessionService = sessionService;
         }
 
-        public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Session, IRequestError>> Handle(
+            Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.CreateSession(request.Name, request.Configuration, cancellationToken);
 
-            if (session is null)
-                return NotFound();
-
-            var res = new RequestResult<Session>(session);
-
-            return res;
+            return session ?? NotFound();
         }
     }
 }

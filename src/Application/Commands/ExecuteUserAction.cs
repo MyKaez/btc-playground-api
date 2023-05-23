@@ -32,7 +32,8 @@ public static class ExecuteUserAction
             _simulatorFactory = simulatorFactory;
         }
 
-        public override async Task<RequestResult<User>> Handle(Command request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<User, IRequestError>> Handle(
+            Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
@@ -48,7 +49,8 @@ public static class ExecuteUserAction
                 return NotAuthorized();
 
             var config = request.Configuration;
-            var simulationType = session.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
+            var simulation = session.Configuration?.FromJsonElement<Simulation>();
+            var simulationType = simulation?.SimulationType ?? "";
 
             if (simulationType != "")
             {
@@ -62,12 +64,7 @@ public static class ExecuteUserAction
                 };
 
                 if (simResult is not null)
-                {
-                    if (simResult.IsValid)
-                        config = simResult.Result;
-                    else
-                        return new RequestResult<User>(simResult.Error!);
-                }
+                    config = simResult.Value;
             }
 
             var update = new UserUpdate
@@ -80,9 +77,10 @@ public static class ExecuteUserAction
 
             user = await _userService.Update(update, cancellationToken);
 
-            var res = new RequestResult<User>(user!);
+            if (user is null)
+                throw new UnreachableException();
 
-            return res;
+            return user;
         }
     }
 }

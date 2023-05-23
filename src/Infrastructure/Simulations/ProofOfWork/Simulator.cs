@@ -20,8 +20,8 @@ public class Simulator : ISimulator
         _sessionService = sessionService;
     }
 
-    public async Task<RequestResult<JsonElement>?> SessionPrepare(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    public async Task<JsonElement?> SessionPrepare(
+        Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var preparation = new ProofOfWorkSession { SecondsUntilBlock = 10 };
         var sessionUpdate = new SessionUpdate
@@ -33,11 +33,11 @@ public class Simulator : ISimulator
 
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
 
-        return new RequestResult<JsonElement>(sessionUpdate.Configuration);
+        return sessionUpdate.Configuration;
     }
 
-    public async Task<RequestResult<JsonElement>?> SessionStart(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    public async Task<JsonElement?> SessionStart(
+        Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var users = await _userService.GetBySessionId(session.Id, cancellationToken);
         var userConfigs = users
@@ -55,10 +55,11 @@ public class Simulator : ISimulator
 
         var res = sessionConfig.ToJsonElement();
 
-        return new RequestResult<JsonElement>(res);
+        return res;
     }
 
-    public async Task<RequestResult<JsonElement>?> SessionReset(Session session, JsonElement config, CancellationToken cancellationToken)
+    public async Task<JsonElement?> SessionReset(
+        Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var users = await _userService.GetBySessionId(session.Id, cancellationToken);
 
@@ -71,14 +72,14 @@ public class Simulator : ISimulator
                 Status = UserStatus.NotReady,
                 Configuration = JsonDocument.Parse("{}").RootElement
             };
-            
+
             await _userService.Update(update, cancellationToken);
         }
 
-        return new RequestResult<JsonElement>(JsonDocument.Parse("{}").RootElement);
+        return JsonDocument.Parse("{}").RootElement;
     }
 
-    public async Task<RequestResult<JsonElement>?> UserReady(
+    public async Task<JsonElement?> UserReady(
         Session session, User user, JsonElement config, CancellationToken cancellationToken)
     {
         var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
@@ -99,11 +100,10 @@ public class Simulator : ISimulator
 
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
 
-        return new RequestResult<JsonElement>(config);
+        return config;
     }
 
-    public async Task<RequestResult<JsonElement>?> UserDone(Session session, JsonElement config,
-        CancellationToken cancellationToken)
+    public async Task<JsonElement> UserDone(Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var block = config.Deserialize<ProofOfWorkBlock>(Application.Defaults.Options);
 
@@ -111,12 +111,12 @@ public class Simulator : ISimulator
             throw new NotSupportedException();
 
         if (!string.Equals(block.Text.ComputeSha256Hash(), block.Hash, StringComparison.CurrentCultureIgnoreCase))
-            return new RequestResult<JsonElement>(new BadRequest("The text does not match to the hash"));
+            throw new NotSupportedException("The text does not match to the hash");
 
         var threshold = session.Configuration?.FromJsonElement<ProofOfWorkSession>()?.Threshold!;
 
         if (string.Compare(block.Hash, threshold, StringComparison.CurrentCultureIgnoreCase) > 0)
-            return new RequestResult<JsonElement>(new BadRequest("The hash is larger than the threshold"));
+            throw new NotSupportedException("The hash is larger than the threshold");
 
         var sessionUpdate = new SessionUpdate
         {
@@ -127,7 +127,7 @@ public class Simulator : ISimulator
 
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
 
-        return new RequestResult<JsonElement>(config);
+        return config;
     }
 
     public async Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken)

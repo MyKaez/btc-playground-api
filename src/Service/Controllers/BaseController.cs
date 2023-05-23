@@ -6,17 +6,22 @@ namespace Service.Controllers;
 
 public abstract class BaseController : Controller
 {
-    protected IActionResult Result<T>(RequestResult<T> result, Func<T, object> ok)
+    protected IActionResult Result<T>(RequestResult<T, IRequestError> result, Func<T, object> ok)
     {
-        if (result.IsValid)
-            return Ok(ok(result.Result!));
+        return result.Match<IActionResult>(
+            res => base.Ok(ok(res)),
+            err =>
+            {
+                if (ReferenceEquals(err, NotFoundResult.Obj))
+                    return base.NotFound();
 
-        if (ReferenceEquals(result.Error, NotFoundResult.Obj))
-            return base.NotFound();
-        
-        if (ReferenceEquals(result.Error, NotAuthorizedResult.Obj))
-            return base.Unauthorized();
+                if (ReferenceEquals(err, NotAuthorizedResult.Obj))
+                    return base.Unauthorized();
 
-        return base.Problem();
+                if (err is BadRequest br)
+                    return base.BadRequest(br);
+
+                return base.Problem();
+            });
     }
 }

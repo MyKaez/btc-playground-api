@@ -23,7 +23,8 @@ public static class SendMessage
             _messageService = messageService;
         }
 
-        public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Session, IRequestError>> Handle(
+            Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId,cancellationToken);
             var message = new Message
@@ -54,7 +55,7 @@ public static class SendMessage
                 await _messageService.SendMessage(session.Id, message, cancellationToken);
             }
 
-            return new RequestResult<Session>(session);
+            return session;
         }
     }
 }

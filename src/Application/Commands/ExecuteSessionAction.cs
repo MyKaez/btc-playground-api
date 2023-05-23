@@ -28,7 +28,8 @@ public static class ExecuteSessionAction
             _simulatorFactory = simulatorFactory;
         }
 
-        public override async Task<RequestResult<Session>> Handle(Command request, CancellationToken cancellationToken)
+        public override async Task<RequestResult<Session, IRequestError>> Handle(
+            Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);
 
@@ -39,7 +40,7 @@ public static class ExecuteSessionAction
                 return NotAuthorized();
 
             var config = request.Configuration;
-            var simulationType = config.FromJsonElement<Simulation>()?.SimulationType ??"";
+            var simulationType = config.FromJsonElement<Simulation>()?.SimulationType ?? "";
 
             if (simulationType != "")
             {
@@ -53,13 +54,8 @@ public static class ExecuteSessionAction
                     _ => throw new UnreachableException()
                 };
 
-                if (simResult is not null)
-                {
-                    if (simResult.IsValid)
-                        config = simResult.Result;
-                    else
-                        return new RequestResult<Session>(simResult.Error!);
-                }
+                if (simResult .HasValue)
+                    config = simResult.Value;
             }
 
             var update = new SessionUpdate
@@ -71,12 +67,7 @@ public static class ExecuteSessionAction
 
             session = await _sessionService.UpdateSession(update, cancellationToken);
 
-            if (session is null)
-                return NotFound();
-
-            var res = new RequestResult<Session>(session);
-
-            return res;
+            return session ?? NotFound();
         }
     }
 }
