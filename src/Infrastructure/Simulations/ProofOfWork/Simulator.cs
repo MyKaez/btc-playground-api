@@ -58,6 +58,26 @@ public class Simulator : ISimulator
         return new RequestResult<JsonElement>(res);
     }
 
+    public async Task<RequestResult<JsonElement>?> SessionReset(Session session, JsonElement config, CancellationToken cancellationToken)
+    {
+        var users = await _userService.GetBySessionId(session.Id, cancellationToken);
+
+        foreach (var user in users)
+        {
+            var update = new UserUpdate
+            {
+                SessionId = session.Id,
+                UserId = user.Id,
+                Status = UserStatus.NotReady,
+                Configuration = JsonDocument.Parse("{}").RootElement
+            };
+            
+            await _userService.Update(update, cancellationToken);
+        }
+
+        return new RequestResult<JsonElement>(JsonDocument.Parse("{}").RootElement);
+    }
+
     public async Task<RequestResult<JsonElement>?> UserReady(
         Session session, User user, JsonElement config, CancellationToken cancellationToken)
     {

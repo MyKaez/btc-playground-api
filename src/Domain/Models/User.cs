@@ -10,7 +10,7 @@ public record User
 
     public string Name { get; init; } = "";
 
-    public UserStatus Status { get; init; }
+    public UserStatus Status { get; set; }
     
     public JsonElement? Configuration { get; set; }
 }
