@@ -18,7 +18,7 @@ public static class GetLatestBlocks
             _blockService = blockService;
         }
 
-        public override async Task<RequestResult<Block[], IRequestError>> Handle(
+        public override async Task<Result<Block[]>> Handle(
             Query request, CancellationToken cancellationToken)
         {
             var blocks = await _blockService.GetBlocks(cancellationToken);

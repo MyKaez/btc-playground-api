@@ -28,7 +28,7 @@ public static class ExecuteSessionAction
             _simulatorFactory = simulatorFactory;
         }
 
-        public override async Task<RequestResult<Session, IRequestError>> Handle(
+        public override async Task<Result<Session>> Handle(
             Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);
@@ -53,9 +53,11 @@ public static class ExecuteSessionAction
                     SessionAction.Reset => await simulator.SessionReset(session, config, cancellationToken),
                     _ => throw new UnreachableException()
                 };
-
-                if (simResult .HasValue)
-                    config = simResult.Value;
+                
+                if (simResult.TryGetValue(out var conf, out var error))
+                    config = conf;
+                else
+                    return new Result<Session>(error);
             }
 
             var update = new SessionUpdate

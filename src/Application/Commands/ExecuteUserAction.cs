@@ -32,7 +32,7 @@ public static class ExecuteUserAction
             _simulatorFactory = simulatorFactory;
         }
 
-        public override async Task<RequestResult<User, IRequestError>> Handle(
+        public override async Task<Result<User>> Handle(
             Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);
@@ -63,19 +63,28 @@ public static class ExecuteUserAction
                     _ => throw new UnreachableException()
                 };
 
-                if (simResult is not null)
-                    config = simResult.Value;
+                if (simResult.TryGetValue(out var conf, out var error))
+                    config = conf;
+                else
+                    return new Result<User>(error);
             }
 
+            user = await UpdateUser(request, config, cancellationToken);
+
+            return user;
+        }
+
+        private async Task<User> UpdateUser(Command request, JsonElement config, CancellationToken cancellationToken)
+        {
             var update = new UserUpdate
             {
-                SessionId = session.Id,
-                UserId = user.Id,
+                SessionId = request.SessionId,
+                UserId = request.UserId,
                 Status = request.Status,
                 Configuration = config
             };
 
-            user = await _userService.Update(update, cancellationToken);
+            var user = await _userService.Update(update, cancellationToken);
 
             if (user is null)
                 throw new UnreachableException();

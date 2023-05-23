@@ -6,37 +6,20 @@ namespace Application.Simulations;
 
 public interface ISimulator
 {
-    Task<JsonElement?> SessionPrepare(Session session, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<JsonElement?>(null);
-    }
+    Task<Result<JsonElement>> SessionPrepare(Session session, JsonElement config, CancellationToken cancellationToken);
 
-    Task<JsonElement?> SessionStart(Session session, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<JsonElement?>(null);
-    }
+    Task<Result<JsonElement>> SessionStart(Session session, JsonElement config, CancellationToken cancellationToken);
 
-    Task<JsonElement?> SessionStop(Session session, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<JsonElement?>(null);
-    }
+    Task<Result<JsonElement>> SessionStop(Session session, JsonElement config, CancellationToken cancellationToken);
 
-    Task<JsonElement?> SessionReset(Session session, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<JsonElement?>(null);
-    }
+    Task<Result<JsonElement>> SessionReset(Session session, JsonElement config, CancellationToken cancellationToken);
 
-    Task<JsonElement?> UserNotReady(Session session, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<JsonElement?>(null);
-    }
+    Task<Result<JsonElement>> UserNotReady(Session session, JsonElement config, CancellationToken cancellationToken);
 
-    Task<JsonElement?> UserReady(Session session, User user, JsonElement config, CancellationToken cancellationToken)
-    {
-        return Task.FromResult<JsonElement?>(null);
-    }
+    Task<Result<JsonElement>> UserReady(
+        Session session, User user, JsonElement config, CancellationToken cancellationToken);
 
-    Task<JsonElement> UserDone(Session session, JsonElement config, CancellationToken cancellationToken);
+    Task<Result<JsonElement>> UserDone(Session session, JsonElement config, CancellationToken cancellationToken);
 
     Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken);
 }

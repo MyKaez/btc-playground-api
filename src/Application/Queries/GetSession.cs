@@ -18,7 +18,7 @@ public static class GetSession
             _sessionService = sessionService;
         }
 
-        public override async Task<RequestResult<Session, IRequestError>> Handle(
+        public override async Task<Result<Session>> Handle(
             Query request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.Id, cancellationToken);

@@ -3,24 +3,23 @@ using MediatR;
 
 namespace Application.Handlers;
 
-public abstract class
-    RequestHandler<TInput, TResponse> : IRequestHandler<TInput, RequestResult<TResponse, IRequestError>>
-    where TInput : IRequest<RequestResult<TResponse, IRequestError>>
+public abstract class RequestHandler<TInput, TResponse> : IRequestHandler<TInput, Result<TResponse>>
+    where TInput : IRequest<Result<TResponse>>
 {
-    public abstract Task<RequestResult<TResponse, IRequestError>> Handle(TInput request,
+    public abstract Task<Result<TResponse>> Handle(TInput request,
         CancellationToken cancellationToken);
 
-    protected RequestResult<TResponse, IRequestError> NotFound()
+    protected Result<TResponse> NotFound()
     {
         return NotFoundResult.Obj;
     }
 
-    protected RequestResult<TResponse, IRequestError> NotAuthorized()
+    protected Result<TResponse> NotAuthorized()
     {
         return NotAuthorizedResult.Obj;
     }
 
-    protected RequestResult<TResponse, IRequestError> BadRequest(string errorMessage)
+    protected Result<TResponse> BadRequest(string errorMessage)
     {
         return new BadRequest(errorMessage);
     }

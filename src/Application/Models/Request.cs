@@ -2,4 +2,4 @@
 
 namespace Application.Models;
 
-public record Request<TResponse> : IRequest<RequestResult<TResponse, IRequestError>>;
+public record Request<TResponse> : IRequest<Result<TResponse>>;

@@ -23,7 +23,7 @@ public static class SendMessage
             _messageService = messageService;
         }
 
-        public override async Task<RequestResult<Session, IRequestError>> Handle(
+        public override async Task<Result<Session>> Handle(
             Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId,cancellationToken);

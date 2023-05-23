@@ -20,25 +20,22 @@ public class Simulator : ISimulator
         _sessionService = sessionService;
     }
 
-    public async Task<JsonElement?> SessionPrepare(
+    public Task<Result<JsonElement>> SessionPrepare(
         Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var preparation = new ProofOfWorkSession { SecondsUntilBlock = 10 };
-        var sessionUpdate = new SessionUpdate
-        {
-            SessionId = session.Id,
-            Action = SessionAction.Stop,
-            Configuration = preparation.ToJsonElement()
-        };
 
-        await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
-
-        return sessionUpdate.Configuration;
+        return Task.FromResult<Result<JsonElement>>(preparation.ToJsonElement());
     }
 
-    public async Task<JsonElement?> SessionStart(
+    public async Task<Result<JsonElement>> SessionStart(
         Session session, JsonElement config, CancellationToken cancellationToken)
     {
+        var sessionConfig = config.FromJsonElement<ProofOfWorkSession>();
+
+        if (sessionConfig is null)
+            throw new NotSupportedException();
+
         var users = await _userService.GetBySessionId(session.Id, cancellationToken);
         var userConfigs = users
             .Where(u => u.Status == UserStatus.Ready)
@@ -46,19 +43,24 @@ public class Simulator : ISimulator
             .Where(u => u.HasValue)
             .Select(c => c?.FromJsonElement<ProofOfWorkUser>()!)
             .ToArray();
+
+        ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
+        
+        return sessionConfig.ToJsonElement();
+    }
+
+    public Task<Result<JsonElement>> SessionStop(
+        Session session, JsonElement config, CancellationToken cancellationToken)
+    {
         var sessionConfig = config.FromJsonElement<ProofOfWorkSession>();
 
         if (sessionConfig is null)
             throw new NotSupportedException();
 
-        ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
-
-        var res = sessionConfig.ToJsonElement();
-
-        return res;
+        return Task.FromResult<Result<JsonElement>>(sessionConfig.ToJsonElement());
     }
 
-    public async Task<JsonElement?> SessionReset(
+    public async Task<Result<JsonElement>> SessionReset(
         Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var users = await _userService.GetBySessionId(session.Id, cancellationToken);
@@ -79,11 +81,21 @@ public class Simulator : ISimulator
         return JsonDocument.Parse("{}").RootElement;
     }
 
-    public async Task<JsonElement?> UserReady(
+    public Task<Result<JsonElement>> UserNotReady(
+        Session session, JsonElement config, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<Result<JsonElement>>(JsonDocument.Parse("{}").RootElement);
+    }
+
+    public async Task<Result<JsonElement>> UserReady(
         Session session, User user, JsonElement config, CancellationToken cancellationToken)
     {
         var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
         var userConfig = config.FromJsonElement<ProofOfWorkUser>();
+
+        if (userConfig is null)
+            throw new NotSupportedException();
+        
         var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
         var restUsers = sessionUsers
             .Where(u => u.Id != user.Id)
@@ -103,7 +115,8 @@ public class Simulator : ISimulator
         return config;
     }
 
-    public async Task<JsonElement> UserDone(Session session, JsonElement config, CancellationToken cancellationToken)
+    public async Task<Result<JsonElement>> UserDone(
+        Session session, JsonElement config, CancellationToken cancellationToken)
     {
         var block = config.Deserialize<ProofOfWorkBlock>(Application.Defaults.Options);
 

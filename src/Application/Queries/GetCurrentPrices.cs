@@ -18,7 +18,7 @@ public static class GetCurrentPrices
             _priceService = priceService;
         }
 
-        public override async Task<RequestResult<Price[], IRequestError>> Handle(
+        public override async Task<Result<Price[]>> Handle(
             Query request, CancellationToken cancellationToken)
         {
             var prices = await _priceService.GetCurrentPrices(cancellationToken);

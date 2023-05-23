@@ -18,12 +18,12 @@ public static class GetSessionSuggestion
             _suggestionService = suggestionService;
         }
 
-        public override Task<RequestResult<SessionSuggestion, IRequestError>> Handle(
+        public override Task<Result<SessionSuggestion>> Handle(
             Query request, CancellationToken cancellationToken)
         {
             var suggestion = _suggestionService.GetSessionSuggestion();
 
-            return Task.FromResult<RequestResult<SessionSuggestion, IRequestError>>(suggestion);
+            return Task.FromResult<Result<SessionSuggestion>>(suggestion);
         }
     }
 }

@@ -20,7 +20,7 @@ public static class RegisterUser
             _userService = userService;
         }
 
-        public override async Task<RequestResult<User, IRequestError>> Handle(
+        public override async Task<Result<User>> Handle(
             Command request, CancellationToken cancellationToken)
         {
             var session = await _sessionService.GetById(request.SessionId, cancellationToken);

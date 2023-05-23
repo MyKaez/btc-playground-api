@@ -6,7 +6,7 @@ namespace Service.Controllers;
 
 public abstract class BaseController : Controller
 {
-    protected IActionResult Result<T>(RequestResult<T, IRequestError> result, Func<T, object> ok)
+    protected IActionResult Result<T>(Result<T> result, Func<T, object> ok)
     {
         return result.Match<IActionResult>(
             res => base.Ok(ok(res)),

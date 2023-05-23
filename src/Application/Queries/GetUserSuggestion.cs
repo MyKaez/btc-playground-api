@@ -18,12 +18,12 @@ public static class GetUserSuggestion
             _suggestionService = suggestionService;
         }
 
-        public override Task<RequestResult<UserSuggestion, IRequestError>> Handle(
+        public override Task<Result<UserSuggestion>> Handle(
             Query request, CancellationToken cancellationToken)
         {
             var suggestion = _suggestionService.GetUserSuggestion();
 
-            return Task.FromResult<RequestResult<UserSuggestion, IRequestError>>(suggestion);
+            return Task.FromResult<Result<UserSuggestion>>(suggestion);
         }
     }
 }
