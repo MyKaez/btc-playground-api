@@ -51,6 +51,7 @@ public static class ExecuteSessionAction
                     SessionAction.Start => await simulator.SessionStart(session, config, cancellationToken),
                     SessionAction.Stop => await simulator.SessionStop(session, config, cancellationToken),
                     SessionAction.Reset => await simulator.SessionReset(session, config, cancellationToken),
+                    SessionAction.Update => await simulator.SessionUpdate(session, config, cancellationToken),
                     _ => throw new UnreachableException()
                 };
                 

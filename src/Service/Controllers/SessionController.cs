@@ -49,6 +49,18 @@ public class SessionController : BaseController
         return Result(res, session => _mapper.Map<SessionControlDto>(session));
     }
 
+    [HttpPut("{sessionId:guid}")]
+    public async Task<IActionResult> Put(Guid sessionId, [FromBody] SessionUpdateRequest request)
+    {
+        var cmd = new ExecuteSessionAction.Command(sessionId, request.ControlId, SessionAction.Update)
+        {
+            Configuration = request.Configuration
+        };
+        var res = await _mediator.Send(cmd);
+
+        return Result(res, session => _mapper.Map<SessionDto>(session));
+    }
+
     [HttpPost("{sessionId:guid}/actions")]
     public async Task<IActionResult> Post(Guid sessionId, [FromBody] SessionActionRequest request)
     {

@@ -5,5 +5,6 @@ public enum SessionAction
     Prepare,
     Start, 
     Stop, 
-    Reset
+    Reset,
+    Update
 }

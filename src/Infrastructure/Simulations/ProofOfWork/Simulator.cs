@@ -81,6 +81,27 @@ public class Simulator : ISimulator
         return JsonDocument.Parse("{}").RootElement;
     }
 
+    public async Task<Result<JsonElement>> SessionUpdate(Session session, JsonElement config,
+        CancellationToken cancellationToken)
+    {
+        var sessionConfig = config.FromJsonElement<ProofOfWorkSession>();
+
+        if (sessionConfig is null)
+            throw new NotSupportedException();
+
+        var users = await _userService.GetBySessionId(session.Id, cancellationToken);
+        var userConfigs = users
+            .Where(u => u.Status == UserStatus.Ready)
+            .Select(u => u.Configuration)
+            .Where(u => u.HasValue)
+            .Select(c => c?.FromJsonElement<ProofOfWorkUser>()!)
+            .ToArray();
+
+        ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
+
+        return sessionConfig.ToJsonElement();
+    }
+
     public Task<Result<JsonElement>> UserNotReady(
         Session session, JsonElement config, CancellationToken cancellationToken)
     {

@@ -14,6 +14,8 @@ public interface ISimulator
 
     Task<Result<JsonElement>> SessionReset(Session session, JsonElement config, CancellationToken cancellationToken);
 
+    Task<Result<JsonElement>> SessionUpdate(Session session, JsonElement config, CancellationToken cancellationToken);
+    
     Task<Result<JsonElement>> UserNotReady(Session session, JsonElement config, CancellationToken cancellationToken);
 
     Task<Result<JsonElement>> UserReady(

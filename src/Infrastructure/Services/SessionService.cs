@@ -75,7 +75,7 @@ public class SessionService : ISessionService
         var session = await _sessionRepository.Update(
             update.SessionId, session =>
             {
-                if (update.Action.HasValue)
+                if (update.Action.HasValue && update.Action != SessionAction.Update)
                     session.Status = ActionStatusMap[update.Action.Value].ToString();
                 
                 session.Updated = DateTime.Now;
