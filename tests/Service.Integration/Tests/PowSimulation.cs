@@ -153,6 +153,8 @@ public class PowSimulation
         foreach (var user in users)
             await _client.UpdateUser(sessionControl.Id, user.User, user.PowConfig);
 
+        _testOutputHelper.WriteLine($"amount of users: {users.Length}");
+        
         return users;
     }
 
