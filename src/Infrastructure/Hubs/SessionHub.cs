@@ -52,10 +52,10 @@ public class SessionHub : Hub
 
             if (connection.UserId.HasValue)
             {
-                await Clients.All.SendAsync(connection.SessionId + ":DeleteUser", connection.UserId);
-
                 var session = await _sessionService.GetById(connection.SessionId, CancellationToken.None);
                 var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
+                
+                await _sessionService.DeleteUser(connection.SessionId, connection.UserId.Value, CancellationToken.None);
 
                 if (simulationType != "")
                 {

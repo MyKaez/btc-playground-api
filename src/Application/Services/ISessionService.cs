@@ -12,4 +12,6 @@ public interface ISessionService
     Task<Session?> CreateSession(string name, JsonElement? configuration, CancellationToken cancellationToken);
 
     Task<Session?> UpdateSession(SessionUpdate update, CancellationToken cancellationToken);
+    
+    Task DeleteUser(Guid sessionId, Guid userId, CancellationToken cancellationToken);
 }

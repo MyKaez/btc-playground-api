@@ -2,6 +2,7 @@
 using Application.Services;
 using AutoMapper;
 using Domain.Models;
+using Infrastructure.Database;
 using Infrastructure.Hubs;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.SignalR;
@@ -77,7 +78,7 @@ public class SessionService : ISessionService
             {
                 if (update.Action.HasValue && update.Action != SessionAction.Update)
                     session.Status = ActionStatusMap[update.Action.Value].ToString();
-                
+
                 session.Updated = DateTime.Now;
                 session.ExpiresAt = DateTime.Now.AddMinutes(10);
                 session.Configuration = update.Configuration.ToString();
@@ -92,5 +93,22 @@ public class SessionService : ISessionService
             new { res.Id, res.Status, res.Configuration }, cancellationToken);
 
         return res;
+    }
+
+    public async Task DeleteUser(Guid sessionId, Guid userId, CancellationToken cancellationToken)
+    {
+        await _sessionRepository.Update(
+            sessionId, session =>
+            {
+                session.Updated = DateTime.Now;
+                session.ExpiresAt = DateTime.Now.AddMinutes(10);
+                
+                var interaction = session.Interactions.FirstOrDefault(i => i.User.Id == userId);
+                
+                if (interaction is not null)
+                    interaction.IsDeleted = true;
+            }, cancellationToken);
+
+        await _hubContext.Clients.All.SendAsync(sessionId + ":DeleteUser", userId, cancellationToken);
     }
 }
