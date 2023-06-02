@@ -4,7 +4,7 @@ using Domain.Simulations;
 
 namespace Infrastructure.Simulations.Models;
 
-public record ProofOfWorkSession : ISimulation
+public record ProofOfWorkSession : ISimulation, ISimulationResult
 {
     public static readonly BigInteger Max = BigInteger.Pow(2, 255);
 
