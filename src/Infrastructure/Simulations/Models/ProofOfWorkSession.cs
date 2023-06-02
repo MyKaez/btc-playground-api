@@ -1,9 +1,10 @@
 ﻿using System.Numerics;
+using System.Text.Json;
 using Domain.Simulations;
 
 namespace Infrastructure.Simulations.Models;
 
-public class ProofOfWorkSession : ISimulation
+public record ProofOfWorkSession : ISimulation
 {
     public static readonly BigInteger Max = BigInteger.Pow(2, 255);
 
@@ -18,6 +19,8 @@ public class ProofOfWorkSession : ISimulation
     public double? Expected { get; set; }
 
     public string? Threshold { get; set; }
+    
+    public JsonElement? Result { get; set; }
 
     public static void Calculate(ProofOfWorkSession pow, long totalHashRate)
     {

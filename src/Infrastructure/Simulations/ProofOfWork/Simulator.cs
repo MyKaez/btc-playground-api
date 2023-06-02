@@ -147,16 +147,19 @@ public class Simulator : ISimulator
         if (!string.Equals(block.Text.ComputeSha256Hash(), block.Hash, StringComparison.CurrentCultureIgnoreCase))
             throw new NotSupportedException("The text does not match to the hash");
 
-        var threshold = session.Configuration?.FromJsonElement<ProofOfWorkSession>()?.Threshold!;
+        var sessionConfig = session.Configuration?.FromJsonElement<ProofOfWorkSession>();
+        var threshold = sessionConfig?.Threshold!;
 
         if (string.Compare(block.Hash, threshold, StringComparison.CurrentCultureIgnoreCase) > 0)
             throw new NotSupportedException("The hash is larger than the threshold");
 
+        sessionConfig!.Result = config;
+        
         var sessionUpdate = new SessionUpdate
         {
             SessionId = session.Id,
             Action = SessionAction.Stop,
-            Configuration = config
+            Configuration = sessionConfig.ToJsonElement()
         };
 
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
