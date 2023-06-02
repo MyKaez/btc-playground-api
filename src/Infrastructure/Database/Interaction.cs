@@ -6,8 +6,10 @@ public class Interaction
     
     public Guid SessionId { get; set; }
 
-    public virtual Session Session { get; set; } 
+    public bool IsDeleted { get; set; }
 
+    public virtual Session Session { get; set; }
+    
     public Guid UserId { get; set; }
     
     public virtual User User { get; set; }
