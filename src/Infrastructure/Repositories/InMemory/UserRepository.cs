@@ -49,7 +49,7 @@ public class UserRepository : IUserRepository
     public Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
     {
         var session = _memoryCache.Get<Session>(sessionId)!;
-        var users = session.Interactions.Select(i => i.User).ToArray();
+        var users = session.Interactions.Where(i => !i.IsDeleted).Select(i => i.User).ToArray();
 
         return Task.FromResult(users);
     }

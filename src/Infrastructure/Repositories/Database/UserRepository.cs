@@ -51,6 +51,7 @@ public class UserRepository : IUserRepository
         var users =
             from interaction in _context.Interactions.Include(i => i.User)
             where interaction.SessionId == sessionId
+            where !interaction.IsDeleted
             select interaction.User;
 
         return await users.ToArrayAsync(cancellationToken);
