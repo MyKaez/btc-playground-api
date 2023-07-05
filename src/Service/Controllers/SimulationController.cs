@@ -1,6 +1,6 @@
-﻿using AutoMapper;
+﻿using Application.Models;
+using AutoMapper;
 using Infrastructure.Simulations.Models;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Service.Models;
 using Service.Models.Requests;
@@ -11,11 +11,9 @@ namespace Service.Controllers;
 public class SimulationController : BaseController
 {
     private readonly IMapper _mapper;
-    private readonly IMediator _mediator;
 
-    public SimulationController(IMediator mediator, IMapper mapper)
+    public SimulationController(IMapper mapper)
     {
-        _mediator = mediator;
         _mapper = mapper;
     }
 
@@ -23,7 +21,7 @@ public class SimulationController : BaseController
     public IActionResult Post([FromBody] ProofOfWorkRequest request)
     {
         if (!request.TotalHashRate.HasValue || !request.SecondsUntilBlock.HasValue)
-            return BadRequest("TotalHashRate and SecondsUntilBlock are required");
+            return BadRequest(new BadRequest("TotalHashRate and SecondsUntilBlock are required"));
 
         var req = _mapper.Map<ProofOfWorkSession>(request);
         var pow = ProofOfWorkSession.Calculate(req, request.TotalHashRate.Value);
