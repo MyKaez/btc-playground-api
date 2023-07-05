@@ -44,8 +44,8 @@ public class Simulator : ISimulator
             .Select(c => c?.FromJsonElement<ProofOfWorkUser>()!)
             .ToArray();
 
-        ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
-        
+        sessionConfig = ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
+
         return sessionConfig.ToJsonElement();
     }
 
@@ -97,7 +97,7 @@ public class Simulator : ISimulator
             .Select(c => c?.FromJsonElement<ProofOfWorkUser>()!)
             .ToArray();
 
-        ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
+        sessionConfig = ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
 
         return sessionConfig.ToJsonElement();
     }
@@ -116,14 +116,14 @@ public class Simulator : ISimulator
 
         if (userConfig is null)
             throw new NotSupportedException();
-        
+
         var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
         var restUsers = sessionUsers
             .Where(u => u.Id != user.Id)
             .Where(u => u.Status == UserStatus.Ready)
             .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
 
-        ProofOfWorkSession.Calculate(preparation, restUsers + userConfig!.HashRate);
+        preparation = ProofOfWorkSession.Calculate(preparation, restUsers + userConfig!.HashRate);
 
         var sessionUpdate = new SessionUpdate
         {
@@ -153,8 +153,8 @@ public class Simulator : ISimulator
         if (string.Compare(block.Hash, threshold, StringComparison.CurrentCultureIgnoreCase) > 0)
             throw new NotSupportedException("The hash is larger than the threshold");
 
-        sessionConfig!.Result = config;
-        
+        sessionConfig = sessionConfig! with { Result = config };
+
         var sessionUpdate = new SessionUpdate
         {
             SessionId = session.Id,
@@ -176,7 +176,7 @@ public class Simulator : ISimulator
             .Where(u => u.Status == UserStatus.Ready)
             .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
 
-        ProofOfWorkSession.Calculate(preparation, restUsers);
+        preparation = ProofOfWorkSession.Calculate(preparation, restUsers);
 
         var sessionUpdate = new SessionUpdate
         {

@@ -12,32 +12,42 @@ public record ProofOfWorkSession : ISimulation, ISimulationResult
 
     public int SecondsUntilBlock { get; init; }
 
-    public long? TotalHashRate { get; set; }
+    public long? TotalHashRate { get; init; }
 
-    public double? Difficulty { get; set; }
+    public double? Difficulty { get; init; }
 
-    public double? Expected { get; set; }
+    public double? Expected { get; init; }
 
-    public string? Threshold { get; set; }
+    public string? Threshold { get; init; }
     
-    public JsonElement? Result { get; set; }
+    public JsonElement? Result { get; init; }
 
-    public static void Calculate(ProofOfWorkSession pow, long totalHashRate)
+    public static ProofOfWorkSession Calculate(ProofOfWorkSession pow, long totalHashRate)
     {
-        pow.TotalHashRate = totalHashRate;
+        pow = pow with { TotalHashRate = totalHashRate };
 
         if (totalHashRate == 0 || pow.SecondsUntilBlock == 0)
         {
-            pow.Difficulty = null;
-            pow.Expected = null;
-            pow.Threshold = null;
+            pow = pow with
+            {
+                Difficulty = null,
+                Expected = null,
+                Threshold = null
+            };
         }
         else
         {
-            pow.Difficulty = pow.TotalHashRate * pow.SecondsUntilBlock;
-            pow.Expected = 1 / pow.Difficulty;
-            pow.Threshold = CalculateThreshold(pow.Difficulty!.Value);
+            var difficulty = totalHashRate * pow.SecondsUntilBlock;
+            
+            pow = pow with
+            {
+                Difficulty = difficulty,
+                Expected = 1d / difficulty,
+                Threshold = CalculateThreshold(difficulty)
+            };
         }
+
+        return pow;
     }
 
     private static string CalculateThreshold(double powDifficulty)
