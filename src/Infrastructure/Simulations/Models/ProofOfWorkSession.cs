@@ -12,7 +12,7 @@ public record ProofOfWorkSession : ISimulation, ISimulationResult
 
     public int SecondsUntilBlock { get; init; }
 
-    public long? TotalHashRate { get; init; }
+    public double? TotalHashRate { get; init; }
 
     public double? Difficulty { get; init; }
 
@@ -22,7 +22,7 @@ public record ProofOfWorkSession : ISimulation, ISimulationResult
     
     public JsonElement? Result { get; init; }
 
-    public static ProofOfWorkSession Calculate(ProofOfWorkSession pow, long totalHashRate)
+    public static ProofOfWorkSession Calculate(ProofOfWorkSession pow, double totalHashRate)
     {
         pow = pow with { TotalHashRate = totalHashRate };
 
