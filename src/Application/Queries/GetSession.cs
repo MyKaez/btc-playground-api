@@ -7,7 +7,7 @@ namespace Application.Queries;
 
 public static class GetSession
 {
-    public record Query(Guid Id) : Request<Session>;
+    public record Query(Guid Id, string? ControlId) : Request<Session>;
 
     public class Handler : RequestHandler<Query, Session>
     {
@@ -23,7 +23,16 @@ public static class GetSession
         {
             var session = await _sessionService.GetById(request.Id, cancellationToken);
 
-            return session ?? NotFound();
+            if (session is null)
+                return NotFound();
+
+            if (request.ControlId is null)
+                return session;
+
+            if (!Guid.TryParse(request.ControlId, out var controlId) || session.ControlId != controlId)
+                return NotAuthorized();
+
+            return session;
         }
     }
 }
