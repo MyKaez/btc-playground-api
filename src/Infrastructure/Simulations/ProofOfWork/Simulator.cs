@@ -117,15 +117,6 @@ public class Simulator : ISimulator
         if (userConfig is null)
             throw new NotSupportedException();
 
-        var update = new UserUpdate
-        {
-            SessionId = session.Id,
-            UserId = user.Id,
-            Status = UserStatus.Ready,
-            Configuration = config
-        };
-        await _userService.Update(update, cancellationToken);
-
         var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
         var restUsers = sessionUsers
             .Where(u => u.Id != user.Id)
