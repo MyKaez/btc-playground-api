@@ -113,9 +113,18 @@ public class Simulator : ISimulator
     {
         var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
         var userConfig = config.FromJsonElement<ProofOfWorkUser>();
-
+        
         if (userConfig is null)
             throw new NotSupportedException();
+
+        var update = new UserUpdate
+        {
+            SessionId = session.Id,
+            UserId = user.Id,
+            Status = UserStatus.Ready,
+            Configuration = config
+        };
+        await _userService.Update(update, cancellationToken);
 
         var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
         var restUsers = sessionUsers
