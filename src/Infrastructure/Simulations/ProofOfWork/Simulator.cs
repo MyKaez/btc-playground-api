@@ -157,11 +157,10 @@ public class Simulator : ISimulator
         if (string.Compare(block.Hash, threshold, StringComparison.CurrentCultureIgnoreCase) > 0)
             throw new NotSupportedException("The hash is larger than the threshold");
 
-        if (sessionConfig.SecondsToSkipValidBlocks.HasValue &&
-            session.StartTime!.Value.AddSeconds(sessionConfig.SecondsToSkipValidBlocks.Value) < DateTime.Now)
+        if (session.StartTime!.Value.AddSeconds(sessionConfig.SecondsToSkipValidBlocks) > DateTime.Now)
         {
             throw new NotSupportedException(
-                $"The block is valid but the session is not running for {sessionConfig.SecondsToSkipValidBlocks.Value} seconds yet");
+                $"The block is valid but the session is not running for {sessionConfig.SecondsToSkipValidBlocks} seconds yet");
         }
 
         sessionConfig = sessionConfig with { Result = config };
