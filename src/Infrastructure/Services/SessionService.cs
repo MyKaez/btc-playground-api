@@ -92,7 +92,7 @@ public class SessionService : ISessionService
         var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(update.SessionId + ":SessionUpdate",
-            new { res.Id, res.Status, res.Configuration }, cancellationToken);
+            new { res.Id, res.Status, res.Configuration, session.StartTime }, cancellationToken);
 
         return res;
     }
