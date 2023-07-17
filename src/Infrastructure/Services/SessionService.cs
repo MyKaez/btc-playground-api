@@ -93,7 +93,7 @@ public class SessionService : ISessionService
                 }
 
                 session.Updated = DateTime.Now;
-                session.ExpiresAt = DateTime.Now.AddMinutes(10);
+                session.ExpiresAt = DateTime.Now.AddMinutes(30);
                 session.Configuration = update.Configuration.ToString();
             }, cancellationToken);
 
@@ -114,7 +114,7 @@ public class SessionService : ISessionService
             sessionId, session =>
             {
                 session.Updated = DateTime.Now;
-                session.ExpiresAt = DateTime.Now.AddMinutes(10);
+                session.ExpiresAt = DateTime.Now.AddMinutes(30);
 
                 var interaction = session.Interactions.FirstOrDefault(i => i.User.Id == userId);
 
