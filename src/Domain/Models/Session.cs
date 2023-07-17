@@ -19,6 +19,8 @@ public record Session
     public JsonElement? Configuration { get; init; }
 
     public IEnumerable<User> Users => _users;
+    
+    public DateTime? StartTime { get; set; }
 
     public Session Add(User user)
     {

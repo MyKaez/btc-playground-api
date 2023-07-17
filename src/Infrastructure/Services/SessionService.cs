@@ -2,7 +2,6 @@
 using Application.Services;
 using AutoMapper;
 using Domain.Models;
-using Infrastructure.Database;
 using Infrastructure.Hubs;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.SignalR;
@@ -78,6 +77,9 @@ public class SessionService : ISessionService
             {
                 if (update.Action.HasValue && update.Action != SessionAction.Update)
                     session.Status = ActionStatusMap[update.Action.Value].ToString();
+                
+                if (update.Action == SessionAction.Start)
+                    session.StartTime = DateTime.Now;
 
                 session.Updated = DateTime.Now;
                 session.ExpiresAt = DateTime.Now.AddMinutes(10);
