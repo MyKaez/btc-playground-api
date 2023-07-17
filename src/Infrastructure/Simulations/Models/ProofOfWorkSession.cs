@@ -11,8 +11,8 @@ public record ProofOfWorkSession : ISimulation, ISimulationResult
     public string SimulationType => "proofOfWork";
 
     public int SecondsUntilBlock { get; init; }
-    
-    public int? SecondsToSkipValidBlocks { get; init; }
+
+    public int SecondsToSkipValidBlocks { get; init; }
 
     public double? TotalHashRate { get; init; }
 
