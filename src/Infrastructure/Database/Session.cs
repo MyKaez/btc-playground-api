@@ -20,6 +20,8 @@ public class Session
 
     public DateTime? StartTime { get; set; }
     
+    public DateTime? EndTime { get; set; }
+    
     public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
 
     public ICollection<Message> Messages { get; set; } = new List<Message>();

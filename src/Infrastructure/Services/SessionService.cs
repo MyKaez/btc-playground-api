@@ -77,9 +77,11 @@ public class SessionService : ISessionService
             {
                 if (update.Action.HasValue && update.Action != SessionAction.Update)
                     session.Status = ActionStatusMap[update.Action.Value].ToString();
-                
+
                 if (update.Action == SessionAction.Start)
                     session.StartTime = DateTime.Now;
+                else if (update.Action == SessionAction.Stop)
+                    session.EndTime = DateTime.Now;
 
                 session.Updated = DateTime.Now;
                 session.ExpiresAt = DateTime.Now.AddMinutes(10);
@@ -92,7 +94,7 @@ public class SessionService : ISessionService
         var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(update.SessionId + ":SessionUpdate",
-            new { res.Id, res.Status, res.Configuration, session.StartTime }, cancellationToken);
+            new { res.Id, res.Status, res.Configuration, session.StartTime, session.EndTime }, cancellationToken);
 
         return res;
     }
@@ -104,9 +106,9 @@ public class SessionService : ISessionService
             {
                 session.Updated = DateTime.Now;
                 session.ExpiresAt = DateTime.Now.AddMinutes(10);
-                
+
                 var interaction = session.Interactions.FirstOrDefault(i => i.User.Id == userId);
-                
+
                 if (interaction is not null)
                     interaction.IsDeleted = true;
             }, cancellationToken);
