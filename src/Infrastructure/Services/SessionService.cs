@@ -78,10 +78,19 @@ public class SessionService : ISessionService
                 if (update.Action.HasValue && update.Action != SessionAction.Update)
                     session.Status = ActionStatusMap[update.Action.Value].ToString();
 
-                if (update.Action == SessionAction.Start)
-                    session.StartTime = DateTime.Now;
-                else if (update.Action == SessionAction.Stop)
-                    session.EndTime = DateTime.Now;
+                switch (update.Action)
+                {
+                    case SessionAction.Start:
+                        session.StartTime = DateTime.Now;
+                        break;
+                    case SessionAction.Stop:
+                        session.EndTime = DateTime.Now;
+                        break;
+                    case SessionAction.Reset:
+                        session.StartTime = null;
+                        session.EndTime = null;
+                        break;
+                }
 
                 session.Updated = DateTime.Now;
                 session.ExpiresAt = DateTime.Now.AddMinutes(10);
