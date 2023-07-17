@@ -14,5 +14,9 @@ public record SessionDto
     
     public required DateTime ExpirationTime { get; init; }
 
+    public DateTime? StartTime { get; set; }
+    
+    public DateTime? EndTime { get; set; }
+
     public required IReadOnlyCollection<UserDto> Users { get; init; }
 }
