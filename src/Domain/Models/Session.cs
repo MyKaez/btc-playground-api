@@ -21,6 +21,8 @@ public record Session
     public IEnumerable<User> Users => _users;
     
     public DateTime? StartTime { get; set; }
+    
+    public DateTime? EndTime { get; set; }
 
     public Session Add(User user)
     {
