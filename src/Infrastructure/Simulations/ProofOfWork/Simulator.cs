@@ -113,7 +113,7 @@ public class Simulator : ISimulator
     {
         var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
         var userConfig = config.FromJsonElement<ProofOfWorkUser>();
-        
+
         if (userConfig is null)
             throw new NotSupportedException();
 
@@ -148,12 +148,23 @@ public class Simulator : ISimulator
             throw new NotSupportedException("The text does not match to the hash");
 
         var sessionConfig = session.Configuration?.FromJsonElement<ProofOfWorkSession>();
-        var threshold = sessionConfig?.Threshold!;
+
+        if (sessionConfig is null)
+            throw new NotSupportedException("There is no valid config for the session");
+
+        var threshold = sessionConfig.Threshold!;
 
         if (string.Compare(block.Hash, threshold, StringComparison.CurrentCultureIgnoreCase) > 0)
             throw new NotSupportedException("The hash is larger than the threshold");
 
-        sessionConfig = sessionConfig! with { Result = config };
+        if (sessionConfig.SecondsToSkipValidBlocks.HasValue &&
+            session.StartTime!.Value.AddSeconds(sessionConfig.SecondsToSkipValidBlocks.Value) < DateTime.Now)
+        {
+            throw new NotSupportedException(
+                $"The block is valid but the session is not running for {sessionConfig.SecondsToSkipValidBlocks.Value} seconds yet");
+        }
+
+        sessionConfig = sessionConfig with { Result = config };
 
         var sessionUpdate = new SessionUpdate
         {
