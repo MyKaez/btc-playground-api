@@ -123,7 +123,7 @@ public class Simulator : ISimulator
             .Where(u => u.Status == UserStatus.Ready)
             .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
 
-        preparation = ProofOfWorkSession.Calculate(preparation, hashRate + userConfig!.HashRate);
+        preparation = ProofOfWorkSession.Calculate(preparation, hashRate + userConfig.HashRate);
 
         var sessionUpdate = new SessionUpdate
         {
@@ -134,6 +134,26 @@ public class Simulator : ISimulator
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
 
         return config;
+    }
+
+    public async Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken)
+    {
+        var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
+        var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
+        var hashRate = sessionUsers
+            .Where(u => u.Id != userId)
+            .Where(u => u.Status == UserStatus.Ready)
+            .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
+
+        preparation = ProofOfWorkSession.Calculate(preparation, hashRate);
+
+        var sessionUpdate = new SessionUpdate
+        {
+            SessionId = session.Id,
+            Configuration = preparation.ToJsonElement()
+        };
+
+        await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
     }
 
     public async Task<Result<JsonElement>> UserDone(
@@ -175,25 +195,5 @@ public class Simulator : ISimulator
         await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
 
         return config;
-    }
-
-    public async Task UserDelete(Session session, Guid userId, CancellationToken cancellationToken)
-    {
-        var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
-        var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
-        var hashRate = sessionUsers
-            .Where(u => u.Id != userId)
-            .Where(u => u.Status == UserStatus.Ready)
-            .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
-
-        preparation = ProofOfWorkSession.Calculate(preparation, hashRate);
-
-        var sessionUpdate = new SessionUpdate
-        {
-            SessionId = session.Id,
-            Configuration = preparation.ToJsonElement()
-        };
-
-        await _sessionService.UpdateSession(sessionUpdate, cancellationToken);
     }
 }
