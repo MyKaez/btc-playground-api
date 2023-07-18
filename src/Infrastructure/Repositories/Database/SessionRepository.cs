@@ -41,4 +41,19 @@ public class SessionRepository : ISessionRepository
 
         return session;
     }
+
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var session = await GetById(id, cancellationToken);
+        
+        if (session is null)
+            return;
+
+        _context.RemoveRange(session.Messages);
+        _context.RemoveRange(session.Interactions);
+        _context.RemoveRange(session.Interactions.Select(i => i.User).Where(u => u != null).Select(u => u!));
+        _context.Remove(session);
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

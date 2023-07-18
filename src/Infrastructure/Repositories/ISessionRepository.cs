@@ -11,4 +11,6 @@ public interface ISessionRepository
     ValueTask Add(Session entity, CancellationToken cancellationToken);
 
     Task<Session?> Update(Guid id, Action<Session> update, CancellationToken cancellationToken);
+    
+    Task Delete(Guid id, CancellationToken cancellationToken);
 }

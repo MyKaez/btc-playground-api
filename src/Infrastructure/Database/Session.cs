@@ -6,9 +6,9 @@ public class Session
     
     public Guid ControlId { get; set; }
 
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
 
-    public string Status { get; set; }
+    public string Status { get; set; } = "";
     
     public string? Configuration { get; set; }
 

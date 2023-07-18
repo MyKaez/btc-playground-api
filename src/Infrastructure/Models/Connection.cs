@@ -2,7 +2,7 @@
 
 public record Connection
 {
-    public string ConnectionId { get; init; }
+    public string ConnectionId { get; init; } = "";
 
     public Guid SessionId { get; set; }
     

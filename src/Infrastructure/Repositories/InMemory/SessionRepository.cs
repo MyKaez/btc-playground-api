@@ -7,7 +7,8 @@ namespace Infrastructure.Repositories.InMemory;
 public class SessionRepository : ISessionRepository
 {
     private static readonly BlockingCollection<Session> Sessions = new();
-    
+    private static readonly object Locker = new object();
+
     private readonly IMemoryCache _memoryCache;
 
     public SessionRepository(IMemoryCache memoryCache)
@@ -43,5 +44,42 @@ public class SessionRepository : ISessionRepository
             update(session);
 
         return session;
+    }
+
+    public async Task Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var session = await GetById(id, cancellationToken);
+
+        if (session is null)
+            return;
+
+        lock (Locker)
+        {
+            foreach (var message in session.Messages)
+                message.Session = null;
+            foreach (var interaction in session.Interactions)
+            {
+                interaction.Session = null;
+                interaction.User = null;
+            }
+
+            session.Messages.Clear();
+            session.Interactions.Clear();
+
+            _memoryCache.Remove(session.Id);
+
+            var list = new List<Session>();
+
+            while (Sessions.TryTake(out var someSession))
+            {
+                if (someSession.Id == session.Id)
+                    break;
+
+                list.Add(someSession);
+            }
+
+            foreach (var someSession in list)
+                Sessions.Add(someSession, cancellationToken);
+        }
     }
 }

@@ -36,7 +36,7 @@ public class PowSimulation
         _client = httpClientFactory.CreateClient();
         _testServer = httpClientFactory.TestServer;
         _testOutputHelper = testOutputHelper;
-        _startTime = DateTime.Now.ToString("yyyyMMdd-HHmmssfff");
+        _startTime = DateTime.UtcNow.ToString("yyyyMMdd-HHmmssfff");
     }
 
     [Fact]

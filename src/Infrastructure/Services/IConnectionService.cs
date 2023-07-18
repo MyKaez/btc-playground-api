@@ -4,6 +4,8 @@ namespace Infrastructure.Services;
 
 public interface IConnectionService
 {
+    ICollection<Connection> GetAll();
+
     void Add(string connectionId, Guid sessionId);
     
     void Update(string contextConnectionId, Guid userId);

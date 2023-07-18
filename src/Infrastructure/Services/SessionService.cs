@@ -56,9 +56,9 @@ public class SessionService : ISessionService
             Status = SessionStatus.NotStarted.ToString(),
             Name = name,
             Configuration = configuration?.ToString(),
-            Created = DateTime.Now,
-            Updated = DateTime.Now,
-            ExpiresAt = DateTime.Now.AddMinutes(10)
+            Created = DateTime.UtcNow,
+            Updated = DateTime.UtcNow,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(30)
         };
         var res = _mapper.Map<Session>(session);
 
@@ -81,10 +81,10 @@ public class SessionService : ISessionService
                 switch (update.Action)
                 {
                     case SessionAction.Start:
-                        session.StartTime = DateTime.Now;
+                        session.StartTime = DateTime.UtcNow;
                         break;
                     case SessionAction.Stop:
-                        session.EndTime = DateTime.Now;
+                        session.EndTime = DateTime.UtcNow;
                         break;
                     case SessionAction.Reset:
                         session.StartTime = null;
@@ -92,8 +92,8 @@ public class SessionService : ISessionService
                         break;
                 }
 
-                session.Updated = DateTime.Now;
-                session.ExpiresAt = DateTime.Now.AddMinutes(30);
+                session.Updated = DateTime.UtcNow;
+                session.ExpiresAt = DateTime.UtcNow.AddMinutes(30);
                 session.Configuration = update.Configuration.ToString();
             }, cancellationToken);
 
@@ -113,15 +113,21 @@ public class SessionService : ISessionService
         await _sessionRepository.Update(
             sessionId, session =>
             {
-                session.Updated = DateTime.Now;
-                session.ExpiresAt = DateTime.Now.AddMinutes(30);
+                session.Updated = DateTime.UtcNow;
+                session.ExpiresAt = DateTime.UtcNow.AddMinutes(30);
 
-                var interaction = session.Interactions.FirstOrDefault(i => i.User.Id == userId);
+                var interaction = session.Interactions.FirstOrDefault(i => i.User?.Id == userId);
 
                 if (interaction is not null)
                     interaction.IsDeleted = true;
             }, cancellationToken);
 
         await _hubContext.Clients.All.SendAsync(sessionId + ":DeleteUser", userId, cancellationToken);
+    }
+
+    public async Task DeleteSession(Guid sessionId, CancellationToken cancellationToken)
+    {
+        await _sessionRepository.Delete(sessionId, cancellationToken);
+        await _hubContext.Clients.All.SendAsync(sessionId + ":DeleteSession", sessionId, cancellationToken);
     }
 }

@@ -14,4 +14,6 @@ public interface ISessionService
     Task<Session?> UpdateSession(SessionUpdate update, CancellationToken cancellationToken);
     
     Task DeleteUser(Guid sessionId, Guid userId, CancellationToken cancellationToken);
+    
+    Task DeleteSession(Guid sessionId, CancellationToken cancellationToken);
 }

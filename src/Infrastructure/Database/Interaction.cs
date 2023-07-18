@@ -8,9 +8,9 @@ public class Interaction
 
     public bool IsDeleted { get; set; }
 
-    public virtual Session Session { get; set; }
+    public virtual Session? Session { get; set; }
     
     public Guid UserId { get; set; }
     
-    public virtual User User { get; set; }
+    public virtual User? User { get; set; }
 }

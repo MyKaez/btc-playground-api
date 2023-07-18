@@ -14,7 +14,7 @@ public record Session
 
     public SessionStatus Status { get; init; }
 
-    public TimeSpan ExpiresIn { get; init; }
+    public DateTime ExpiresAt { get; init; }
 
     public JsonElement? Configuration { get; init; }
 

@@ -17,10 +17,10 @@ public class ResponseProfile : Profile
             );
         CreateMap<Session, SessionDto>()
             .ForMember(p => p.ExpirationTime,
-                opt => opt.MapFrom(p => DateTime.Now.Add(p.ExpiresIn)));
+                opt => opt.MapFrom(p => p.ExpiresAt));
         CreateMap<Session, SessionControlDto>()
             .ForMember(p => p.ExpirationTime,
-                opt => opt.MapFrom(p => DateTime.Now.Add(p.ExpiresIn)));
+                opt => opt.MapFrom(p => p.ExpiresAt));
         CreateMap<SessionStatus, SessionStatusDto>();
         CreateMap<SessionSuggestion, SessionSuggestionDto>();
         CreateMap<User, UserDto>();
