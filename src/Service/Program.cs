@@ -1,6 +1,7 @@
 using Application.Serialization;
 using Infrastructure;
 using Infrastructure.Hubs;
+using Service.BackgroundJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     )
 );
+builder.Services.AddHostedService<UpdateSession>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.SetDefaults());
 builder.Services.AddSignalR().AddJsonProtocol(options => options.PayloadSerializerOptions.SetDefaults());
 builder.Services.AddEndpointsApiExplorer();
