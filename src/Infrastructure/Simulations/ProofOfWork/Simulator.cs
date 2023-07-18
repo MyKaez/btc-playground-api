@@ -23,7 +23,7 @@ public class Simulator : ISimulator
     public Task<Result<JsonElement>> SessionPrepare(
         Session session, JsonElement config, CancellationToken cancellationToken)
     {
-        var preparation = new ProofOfWorkSession { SecondsUntilBlock = 10 };
+        var preparation = new ProofOfWorkSession { SecondsUntilBlock = 10, SecondsToSkipValidBlocks = 0};
 
         return Task.FromResult<Result<JsonElement>>(preparation.ToJsonElement());
     }
@@ -37,14 +37,14 @@ public class Simulator : ISimulator
             throw new NotSupportedException();
 
         var users = await _userService.GetBySessionId(session.Id, cancellationToken);
-        var userConfigs = users
+        var hashRate = users
             .Where(u => u.Status == UserStatus.Ready)
             .Select(u => u.Configuration)
             .Where(u => u.HasValue)
             .Select(c => c?.FromJsonElement<ProofOfWorkUser>()!)
-            .ToArray();
+            .Sum(c => c.HashRate);
 
-        sessionConfig = ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
+        sessionConfig = ProofOfWorkSession.Calculate(sessionConfig, hashRate);
 
         return sessionConfig.ToJsonElement();
     }
@@ -90,14 +90,14 @@ public class Simulator : ISimulator
             throw new NotSupportedException();
 
         var users = await _userService.GetBySessionId(session.Id, cancellationToken);
-        var userConfigs = users
+        var hashRate = users
             .Where(u => u.Status == UserStatus.Ready)
             .Select(u => u.Configuration)
             .Where(u => u.HasValue)
             .Select(c => c?.FromJsonElement<ProofOfWorkUser>()!)
-            .ToArray();
+            .Sum(c => c.HashRate);
 
-        sessionConfig = ProofOfWorkSession.Calculate(sessionConfig, userConfigs.Sum(c => c.HashRate));
+        sessionConfig = ProofOfWorkSession.Calculate(sessionConfig, hashRate);
 
         return sessionConfig.ToJsonElement();
     }
@@ -118,12 +118,12 @@ public class Simulator : ISimulator
             throw new NotSupportedException();
 
         var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
-        var restUsers = sessionUsers
+        var hashRate = sessionUsers
             .Where(u => u.Id != user.Id)
             .Where(u => u.Status == UserStatus.Ready)
             .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
 
-        preparation = ProofOfWorkSession.Calculate(preparation, restUsers + userConfig!.HashRate);
+        preparation = ProofOfWorkSession.Calculate(preparation, hashRate + userConfig!.HashRate);
 
         var sessionUpdate = new SessionUpdate
         {
@@ -181,12 +181,12 @@ public class Simulator : ISimulator
     {
         var preparation = session.Configuration?.FromJsonElement<ProofOfWorkSession>()!;
         var sessionUsers = await _userService.GetBySessionId(session.Id, cancellationToken);
-        var restUsers = sessionUsers
+        var hashRate = sessionUsers
             .Where(u => u.Id != userId)
             .Where(u => u.Status == UserStatus.Ready)
             .Sum(r => r.Configuration?.FromJsonElement<ProofOfWorkUser>()?.HashRate ?? 0);
 
-        preparation = ProofOfWorkSession.Calculate(preparation, restUsers);
+        preparation = ProofOfWorkSession.Calculate(preparation, hashRate);
 
         var sessionUpdate = new SessionUpdate
         {
