@@ -20,7 +20,7 @@ public record ProofOfWorkSession : ISimulation, ISimulationResult
 
     public double? Expected { get; private init; }
 
-    public string? Threshold { get; private init; }
+    public string? Threshold { get; init; }
     
     public JsonElement? Result { get; init; }
 
