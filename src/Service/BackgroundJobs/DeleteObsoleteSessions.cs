@@ -1,5 +1,6 @@
 ﻿using Application.Services;
 using Infrastructure.Services;
+using Service.Extensions;
 
 namespace Service.BackgroundJobs;
 
@@ -23,13 +24,15 @@ public class DeleteObsoleteSessions : BackgroundService
 
             foreach (var session in sessions)
             {
-                if(connections.All(c => c.SessionId != session.Id))
+                if (!session.IsDeletable())
+                    continue;
+                if (connections.All(c => c.SessionId != session.Id))
                     await _sessionService.DeleteSession(session.Id, stoppingToken);
-                if (DateTime.UtcNow > session.ExpiresAt) 
+                if (DateTime.UtcNow > session.ExpiresAt)
                     await _sessionService.DeleteSession(session.Id, stoppingToken);
             }
 
-            await Task.Delay(1_000, stoppingToken);
+            await Task.Delay(5_000, stoppingToken);
         }
     }
 }

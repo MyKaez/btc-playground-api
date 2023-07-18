@@ -22,6 +22,11 @@ public static class RegisterSession
         public override async Task<Result<Session>> Handle(
             Command request, CancellationToken cancellationToken)
         {
+            var sessions = await _sessionService.GetAll(cancellationToken);
+
+            if (sessions.Any(session => session.Name.Equals(request.Name, StringComparison.OrdinalIgnoreCase)))
+                return BadRequest("Session name already exists");
+            
             var session = await _sessionService.CreateSession(request.Name, request.Configuration, cancellationToken);
 
             return session ?? NotFound();

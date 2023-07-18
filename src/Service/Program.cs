@@ -19,6 +19,7 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     )
 );
+builder.Services.AddHostedService<CreateBlocktrainerSession>();
 builder.Services.AddHostedService<DeleteObsoleteSessions>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.SetDefaults());
 builder.Services.AddSignalR().AddJsonProtocol(options => options.PayloadSerializerOptions.SetDefaults());
