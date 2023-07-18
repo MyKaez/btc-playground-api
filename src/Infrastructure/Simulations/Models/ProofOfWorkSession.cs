@@ -14,13 +14,13 @@ public record ProofOfWorkSession : ISimulation, ISimulationResult
 
     public int SecondsToSkipValidBlocks { get; init; }
 
-    public double? TotalHashRate { get; init; }
+    public double? TotalHashRate { get; private init; }
 
-    public double? Difficulty { get; init; }
+    public double? Difficulty { get; private init; }
 
-    public double? Expected { get; init; }
+    public double? Expected { get; private init; }
 
-    public string? Threshold { get; init; }
+    public string? Threshold { get; private init; }
     
     public JsonElement? Result { get; init; }
 
