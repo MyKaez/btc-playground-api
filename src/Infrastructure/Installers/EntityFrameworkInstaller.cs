@@ -21,6 +21,7 @@ public class EntityFrameworkInstaller : IInstaller
         if (connectionString == c && File.Exists(@"con_string.txt"))
             connectionString = File.ReadAllText(@"con_string.txt");
 
-        services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString),
+            ServiceLifetime.Transient, ServiceLifetime.Transient);
     }
 }
