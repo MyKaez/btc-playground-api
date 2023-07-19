@@ -25,6 +25,7 @@ public class SessionRepository : ISessionRepository
     public async ValueTask Add(Session entity, CancellationToken cancellationToken)
     {
         await _context.Sessions.AddAsync(entity, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Session?> Update(Guid id, Action<Session> update, CancellationToken cancellationToken)
