@@ -23,7 +23,7 @@ public class UserRepository : IUserRepository
         {
             Id = user.Id,
             SessionId = sessionId,
-            UserId = Guid.NewGuid()
+            UserId = user.Id
         };
 
         await _context.AddAsync(interaction, cancellationToken);
