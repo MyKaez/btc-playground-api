@@ -8,30 +8,31 @@ namespace Service.BackgroundJobs;
 
 public class DeleteObsoleteSessions : BackgroundService
 {
-    private readonly ISessionService _sessionService;
-    private readonly IConnectionService _connectionService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public DeleteObsoleteSessions(ISessionService sessionService, IConnectionService connectionService)
+    public DeleteObsoleteSessions(IServiceProvider serviceProvider)
     {
-        _sessionService = sessionService;
-        _connectionService = connectionService;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
+        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+        
         while (!stoppingToken.IsCancellationRequested)
         {
-            var connections = _connectionService.GetAll();
-            var sessions = await _sessionService.GetAll(stoppingToken);
+            var connections = connectionService.GetAll();
+            var sessions = await sessionService.GetAll(stoppingToken);
 
             foreach (var session in sessions)
             {
                 if (!session.IsDeletable())
                     continue;
                 if (HasNoConnection(connections, session))
-                    await _sessionService.DeleteSession(session.Id, stoppingToken);
+                    await sessionService.DeleteSession(session.Id, stoppingToken);
                 if (IsExpired(session))
-                    await _sessionService.DeleteSession(session.Id, stoppingToken);
+                    await sessionService.DeleteSession(session.Id, stoppingToken);
             }
 
             await Task.Delay(5_000, stoppingToken);
