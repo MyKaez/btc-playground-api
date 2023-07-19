@@ -6,31 +6,36 @@ namespace Service.BackgroundJobs;
 
 public class CreateBlocktrainerSession : BackgroundService
 {
-    private readonly ISessionService _sessionService;
+    private readonly IServiceProvider _serviceProvider;
 
-    public CreateBlocktrainerSession(ISessionService sessionService)
+
+    public CreateBlocktrainerSession(IServiceProvider serviceProvider)
     {
-        _sessionService = sessionService;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var session = await _sessionService.CreateSession(
-            Extensions.SessionExtensions.BlocktrainerSessionName, JsonDocument.Parse("{}").RootElement, stoppingToken);
+        var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
+        var sessions = await sessionService.GetAll(stoppingToken);
+        var session = sessions.FirstOrDefault(s => s.Name == Extensions.SessionExtensions.BlocktrainerSessionName) ??
+                      await sessionService.CreateSession(
+                          Extensions.SessionExtensions.BlocktrainerSessionName, JsonDocument.Parse("{}").RootElement,
+                          stoppingToken);
 
         if (session is null)
             throw new NotSupportedException("Cannot create Blocktrainer session");
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var blockTrainerSession = await _sessionService.GetById(session.Id, stoppingToken);
+            var blockTrainerSession = await sessionService.GetById(session.Id, stoppingToken);
 
             if (blockTrainerSession is null)
                 throw new NotSupportedException("Cannot find Blocktrainer session");
 
             var update = new SessionUpdate { SessionId = session.Id, Configuration = blockTrainerSession.Configuration!.Value };
 
-            await _sessionService.UpdateSession(update, stoppingToken);
+            await sessionService.UpdateSession(update, stoppingToken);
             await Task.Delay(60_000, stoppingToken);
         }
     }
