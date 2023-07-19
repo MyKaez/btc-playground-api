@@ -30,7 +30,8 @@ public class SessionRepository : ISessionRepository
 
     public async Task<Session?> Update(Guid id, Action<Session> update, CancellationToken cancellationToken)
     {
-        var session = await GetById(id, cancellationToken);
+        var session = await _context.Sessions.Include(s => s.Interactions)
+            .FirstOrDefaultAsync(i => i.Id == id, cancellationToken);
 
         if (session is null)
             return null;

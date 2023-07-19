@@ -116,7 +116,7 @@ public class SessionService : ISessionService
                 session.Updated = DateTime.UtcNow;
                 session.ExpiresAt = DateTime.UtcNow.AddMinutes(30);
 
-                var interaction = session.Interactions.FirstOrDefault(i => i.User?.Id == userId);
+                var interaction = session.Interactions.FirstOrDefault(i => i.UserId == userId);
 
                 if (interaction is not null)
                     interaction.IsDeleted = true;

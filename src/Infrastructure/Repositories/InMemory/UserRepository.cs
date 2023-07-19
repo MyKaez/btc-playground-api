@@ -24,6 +24,8 @@ public class UserRepository : IUserRepository
         var session = _memoryCache.Get<Session>(sessionId)!;
         var interaction = new Interaction
         {
+            SessionId = sessionId,
+            UserId = user.Id,
             Session = session,
             User = user
         };
