@@ -14,6 +14,8 @@ public record Session
 
     public SessionStatus Status { get; init; }
 
+    public DateTime Updated { get; set; }
+    
     public DateTime ExpiresAt { get; init; }
 
     public JsonElement? Configuration { get; init; }

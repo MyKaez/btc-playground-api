@@ -1,4 +1,6 @@
 ﻿using Application.Services;
+using Domain.Models;
+using Infrastructure.Models;
 using Infrastructure.Services;
 using Service.Extensions;
 
@@ -26,13 +28,26 @@ public class DeleteObsoleteSessions : BackgroundService
             {
                 if (!session.IsDeletable())
                     continue;
-                if (connections.All(c => c.SessionId != session.Id))
+                if (HasNoConnection(connections, session))
                     await _sessionService.DeleteSession(session.Id, stoppingToken);
-                if (DateTime.UtcNow > session.ExpiresAt)
+                if (IsExpired(session))
                     await _sessionService.DeleteSession(session.Id, stoppingToken);
             }
 
             await Task.Delay(5_000, stoppingToken);
         }
+    }
+
+    private static bool HasNoConnection(ICollection<Connection> connections, Session session)
+    {
+        if (session.Updated.AddSeconds(30) > DateTime.UtcNow)
+            return false;
+
+        return connections.All(c => c.SessionId != session.Id);
+    }
+
+    private static bool IsExpired(Session session)
+    {
+        return DateTime.UtcNow > session.ExpiresAt;
     }
 }
