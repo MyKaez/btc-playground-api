@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20230514144836_InitialSetup")]
+    [Migration("20230719174601_InitialSetup")]
     partial class InitialSetup
     {
         /// <inheritdoc />
@@ -30,6 +30,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uniqueidentifier");
@@ -59,7 +62,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Text")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")
@@ -89,12 +91,18 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -114,7 +122,17 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Configuration")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ControlId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

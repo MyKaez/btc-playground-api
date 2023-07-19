@@ -22,7 +22,9 @@ namespace Infrastructure.Migrations
                     Configuration = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Updated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -34,7 +36,10 @@ namespace Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ControlId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Configuration = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -47,6 +52,7 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
@@ -73,7 +79,7 @@ namespace Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Created = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
