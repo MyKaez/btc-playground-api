@@ -30,16 +30,23 @@ public class DeleteObsoleteSessions : BackgroundService
                 if (!session.IsDeletable())
                     continue;
                 if (HasNoConnection(connections, session))
-                    await sessionService.DeleteSession(session.Id, stoppingToken);
+                    await DeleteSession(stoppingToken, session);
                 if (IsExpired(session))
-                    await sessionService.DeleteSession(session.Id, stoppingToken);
+                    await DeleteSession(stoppingToken, session);
             }
 
             await Task.Delay(30_000, stoppingToken);
         }
     }
 
-    private static bool HasNoConnection(ICollection<Connection> connections, Session session)
+    private async Task DeleteSession(CancellationToken stoppingToken, Session session)
+    {
+        var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
+
+        await sessionService.DeleteSession(session.Id, stoppingToken);
+    }
+
+    private static bool HasNoConnection(IEnumerable<Connection> connections, Session session)
     {
         if (session.Updated.AddSeconds(60) > DateTime.UtcNow)
             return false;
