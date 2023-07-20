@@ -35,13 +35,13 @@ public class DeleteObsoleteSessions : BackgroundService
                     await sessionService.DeleteSession(session.Id, stoppingToken);
             }
 
-            await Task.Delay(5_000, stoppingToken);
+            await Task.Delay(30_000, stoppingToken);
         }
     }
 
     private static bool HasNoConnection(ICollection<Connection> connections, Session session)
     {
-        if (session.Updated.AddSeconds(30) > DateTime.UtcNow)
+        if (session.Updated.AddSeconds(60) > DateTime.UtcNow)
             return false;
 
         return connections.All(c => c.SessionId != session.Id);
