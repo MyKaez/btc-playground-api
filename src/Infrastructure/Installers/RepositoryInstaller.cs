@@ -14,11 +14,13 @@ public class RepositoryInstaller : IInstaller
         {
             services.AddTransient<ISessionRepository, SessionRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IConnectionRepository, ConnectionRepository>();
         }
         else
         {
             services.AddTransient<ISessionRepository, Repositories.InMemory.SessionRepository>();
             services.AddTransient<IUserRepository, Repositories.InMemory.UserRepository>();
+            services.AddTransient<IConnectionRepository, Repositories.InMemory.ConnectionRepository>();
         }
     }
 }

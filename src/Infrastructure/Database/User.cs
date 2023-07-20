@@ -12,6 +12,10 @@ public class User
 
     public string? Configuration { get; set; }
     
+    public string? ConnectionId { get; set; }
+    
+    public Connection? Connection { get; set; }
+    
     public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
 
     public ICollection<Message> Messages { get; set; } = new List<Message>();

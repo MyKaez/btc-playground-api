@@ -1,56 +1,48 @@
-﻿using Infrastructure.Models;
-using Microsoft.Extensions.Caching.Memory;
+﻿using AutoMapper;
+using Infrastructure.Models;
+using Infrastructure.Repositories;
 
 namespace Infrastructure.Services;
 
 public class ConnectionService : IConnectionService
 {
-    private readonly IMemoryCache _memoryCache;
+    private readonly IConnectionRepository _connectionRepository;
+    private readonly IMapper _mapper;
 
-    public ConnectionService(IMemoryCache memoryCache)
+    public ConnectionService(IConnectionRepository connectionRepository, IMapper mapper)
     {
-        _memoryCache = memoryCache;
+        _connectionRepository = connectionRepository;
+        _mapper = mapper;
     }
 
     public ICollection<Connection> GetAll()
     {
-        var connections = _memoryCache.GetOrCreate<List<Connection>>(
-            "Connections",
-            _ => new List<Connection>()
-        );
+        var connections = _connectionRepository.GetAll();
+        var res = connections.Select(con => _mapper.Map<Connection>(con)).ToList();
 
-        return connections!;
+        return res;
     }
 
     public void Add(string connectionId, Guid sessionId)
     {
-        var connections = GetAll();
-        var con = new Connection { ConnectionId = connectionId, SessionId = sessionId};
-        
-        connections.Add(con);
+        _connectionRepository.Add(connectionId, sessionId);
     }
 
     public void Update(string connectionId, Guid userId)
     {
-        var connection = Get(connectionId);
-
-        if (connection is not null)
-            connection.UserId = userId;
+        _connectionRepository.Update(connectionId, userId);
     }
 
     public void Remove(string connectionId)
     {
-        var connections = GetAll();
-        var con = connections!.First(c => c.ConnectionId == connectionId);
-
-        connections.Remove(con);
+        _connectionRepository.Remove(connectionId);
     }
 
     public Connection? Get(string connectionId)
     {
-        var connections = GetAll();
-        var con = connections?.FirstOrDefault(c => c.ConnectionId == connectionId);
+        var connection = _connectionRepository.Get(connectionId);
+        var res = connection is null ? null : _mapper.Map<Connection>(connection);
 
-        return con;
+        return res;
     }
 }

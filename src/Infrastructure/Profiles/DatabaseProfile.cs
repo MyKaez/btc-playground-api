@@ -1,6 +1,9 @@
 ﻿using System.Text.Json;
 using AutoMapper;
 using Domain.Models;
+using Infrastructure.Database;
+using Session = Infrastructure.Database.Session;
+using User = Infrastructure.Database.User;
 
 namespace Infrastructure.Profiles;
 
@@ -8,7 +11,7 @@ public class DatabaseProfile : Profile
 {
     public DatabaseProfile()
     {
-        CreateMap<Database.Session, Session>()
+        CreateMap<Session, Domain.Models.Session>()
             .ForMember(
                 s => s.Configuration,
                 opt => opt.MapFrom(
@@ -21,7 +24,7 @@ public class DatabaseProfile : Profile
                     o => Enum.Parse<SessionStatus>(o.Status)
                 )
             );
-        CreateMap<Database.User, User>()
+        CreateMap<User, Domain.Models.User>()
             .ForMember(
                 u => u.Configuration,
                 opt => opt.MapFrom(
@@ -29,10 +32,11 @@ public class DatabaseProfile : Profile
                         ? JsonDocument.Parse(o.Configuration, default).RootElement
                         : JsonDocument.Parse("{}", default).RootElement)
             ).ForMember(
-            u => u.Status,
-            opt => opt.MapFrom(
-                o => Enum.Parse<UserStatus>(o.Status)
-            )
-        );
+                u => u.Status,
+                opt => opt.MapFrom(
+                    o => Enum.Parse<UserStatus>(o.Status)
+                )
+            );
+        CreateMap<Connection, Models.Connection>();
     }
 }

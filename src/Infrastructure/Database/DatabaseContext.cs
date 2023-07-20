@@ -9,6 +9,8 @@ public class DatabaseContext : DbContext
     }
 
     public DbSet<Session> Sessions { get; set; }
+    
+    public DbSet<Connection> Connections { get; set; }
 
     public DbSet<Interaction> Interactions { get; set; }
 
@@ -30,6 +32,14 @@ public class DatabaseContext : DbContext
             entity.Property(e => e.ExpiresAt).IsRequired();
             entity.HasMany(e => e.Interactions).WithOne(i => i.Session);
             entity.HasMany(e => e.Messages).WithOne(i => i.Session);
+            entity.HasMany(e => e.Connections).WithOne(i => i.Session);
+        });
+
+        modelBuilder.Entity<Connection>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne<Session>(e => e.Session).WithMany(e => e.Connections);
+            entity.HasOne<User>(e => e.User).WithOne(e => e.Connection);
         });
 
         modelBuilder.Entity<Interaction>(entity =>
@@ -43,6 +53,7 @@ public class DatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired();
+            entity.HasOne(e => e.Connection).WithOne(i => i.User);
             entity.HasMany(e => e.Interactions).WithOne(i => i.User);
             entity.HasMany(e => e.Messages).WithOne(i => i.User);
         });

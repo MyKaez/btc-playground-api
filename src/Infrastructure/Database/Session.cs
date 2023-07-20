@@ -25,4 +25,6 @@ public class Session
     public ICollection<Interaction> Interactions { get; set; } = new List<Interaction>();
 
     public ICollection<Message> Messages { get; set; } = new List<Message>();
+    
+    public ICollection<Connection> Connections { get; set; } = new List<Connection>();
 }
