@@ -10,7 +10,7 @@ public class ServiceInstaller : IInstaller
 {
     public void Install(IServiceCollection services, IConfiguration config)
     {
-        services.AddSingleton<IConnectionService, ConnectionService>();
+        services.AddTransient<IConnectionService, ConnectionService>();
         
         services.AddTransient<IBlockService, BlockService>();
         services.AddTransient<IPriceService, PriceService>();
