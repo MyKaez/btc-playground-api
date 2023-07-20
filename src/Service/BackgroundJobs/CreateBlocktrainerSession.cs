@@ -8,7 +8,6 @@ public class CreateBlocktrainerSession : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
 
-
     public CreateBlocktrainerSession(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;

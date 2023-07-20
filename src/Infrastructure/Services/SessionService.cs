@@ -69,7 +69,7 @@ public class SessionService : ISessionService
 
         return res;
     }
-
+    
     public async Task<Session?> UpdateSession(SessionUpdate update, CancellationToken cancellationToken)
     {
         var session = await _sessionRepository.Update(

@@ -37,7 +37,6 @@ public class SessionRepository : ISessionRepository
             return null;
 
         update(session);
-        _context.Update(session);
 
         await _context.SaveChangesAsync(cancellationToken);
 
