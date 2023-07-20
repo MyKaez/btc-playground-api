@@ -43,8 +43,6 @@ public class SessionHub : Hub
         }
         else
         {
-            await connectionService.Remove(Context.ConnectionId);
-            
             _logger.LogInformation("Session {SessionID} disconnected from {Connection}",
                 connection.SessionId, Context.ConnectionId);
 
@@ -53,7 +51,7 @@ public class SessionHub : Hub
                 var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
                 var session = await sessionService.GetById(connection.SessionId, CancellationToken.None);
                 var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
-                
+
                 await sessionService.DeleteUser(connection.SessionId, connection.UserId.Value, CancellationToken.None);
 
                 if (simulationType != "")
@@ -64,6 +62,8 @@ public class SessionHub : Hub
                     await simulator.UserDelete(session, connection.UserId.Value, CancellationToken.None);
                 }
             }
+            else
+                await connectionService.Remove(Context.ConnectionId);
         }
 
         await base.OnDisconnectedAsync(exception);
@@ -76,9 +76,9 @@ public class SessionHub : Hub
     public async Task RegisterSession(Guid sessionId)
     {
         var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
-        
+
         await connectionService.Add(Context.ConnectionId, sessionId);
-        
+
         _logger.LogInformation(
             "Session {SessionID} was registered for Connection {Connection}", sessionId, Context.ConnectionId);
     }
@@ -87,12 +87,12 @@ public class SessionHub : Hub
     ///     This method is meant to be called by the frontend. In order to interact properly with the api, the session needs to
     ///     be registered here.
     /// </summary>
-    public async  Task RegisterUser(Guid userId)
+    public async Task RegisterUser(Guid userId)
     {
         var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
-        
+
         await connectionService.Update(Context.ConnectionId, userId);
-        
+
         _logger.LogInformation(
             "User {UserID} was registered for Connection {Connection}", userId, Context.ConnectionId);
     }
