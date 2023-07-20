@@ -23,6 +23,7 @@ jobs:
           replace: ${{ secrets.SQL_CONNECTION_STRING }}
           include: "**/appsettings.*.json"
           regex: false
+          
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
