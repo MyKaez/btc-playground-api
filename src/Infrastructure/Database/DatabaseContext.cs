@@ -53,7 +53,8 @@ public class DatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired();
-            entity.HasOne(e => e.Connection).WithOne(i => i.User);
+            entity.HasOne(e => e.Connection).WithOne(i => i.User)
+                .HasForeignKey<User>(nameof(User.ConnectionId));
             entity.HasMany(e => e.Interactions).WithOne(i => i.User);
             entity.HasMany(e => e.Messages).WithOne(i => i.User);
         });
