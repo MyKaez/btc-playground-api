@@ -38,7 +38,7 @@ public class SessionHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var connection = _connectionService.Get(Context.ConnectionId);
+        var connection = await _connectionService.Get(Context.ConnectionId);
 
         if (connection is null)
         {
@@ -46,7 +46,7 @@ public class SessionHub : Hub
         }
         else
         {
-            _connectionService.Remove(Context.ConnectionId);
+            await _connectionService.Remove(Context.ConnectionId);
             _logger.LogInformation("Session {SessionID} disconnected from {Connection}",
                 connection.SessionId, Context.ConnectionId);
 

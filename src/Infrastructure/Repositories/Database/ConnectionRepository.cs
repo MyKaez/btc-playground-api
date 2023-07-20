@@ -11,40 +11,40 @@ public class ConnectionRepository : IConnectionRepository
         _context = context;
     }
 
-    public ICollection<Connection> GetAll()
+    public Task<ICollection<Connection>> GetAll()
     {
-        return _context.Connections.ToList();
+        return Task.FromResult<ICollection<Connection>>(_context.Connections.ToList());
     }
 
-    public void Add(string connectionId, Guid sessionId)
+    public async Task Add(string connectionId, Guid sessionId)
     {
-        var connection = new Connection{Id = connectionId, SessionId = sessionId};
-        
-        _context.Add(connection);
-        _context.SaveChanges();
+        var connection = new Connection { Id = connectionId, SessionId = sessionId };
+
+        await _context.AddAsync(connection);
+        await _context.SaveChangesAsync();
     }
 
-    public void Update(string connectionId, Guid userId)
+    public async Task Update(string connectionId, Guid userId)
     {
-        var connection = _context.Connections.First(c => c.Id == connectionId);
-        var user = _context.Users.First(u => u.Id == userId);
-        
-        connection.UserId = userId;
-        user.ConnectionId = connectionId;
-        
-        _context.SaveChanges();
+        var connection = await _context.Connections.FindAsync(connectionId);
+        var user = await _context.Users.FindAsync(userId);
+
+        connection!.UserId = userId;
+        user!.ConnectionId = connectionId;
+
+        await _context.SaveChangesAsync();
     }
 
-    public void Remove(string connectionId)
+    public async Task Remove(string connectionId)
     {
-        var con = _context.Connections.First(c => c.Id == connectionId);
+        var con = await _context.Connections.FindAsync(connectionId);
 
-        _context.Remove(con);
-        _context.SaveChanges();
+        _context.Remove(con!);
+        await _context.SaveChangesAsync();
     }
 
-    public Connection? Get(string connectionId)
+    public async Task<Connection?> Get(string connectionId)
     {
-        return _context.Connections.Find(connectionId);
+        return await _context.Connections.FindAsync(connectionId);
     }
 }

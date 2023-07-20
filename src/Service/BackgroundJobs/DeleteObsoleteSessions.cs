@@ -19,10 +19,10 @@ public class DeleteObsoleteSessions : BackgroundService
     {
         var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
         var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
-        
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            var connections = connectionService.GetAll();
+            var connections = await connectionService.GetAll();
             var sessions = await sessionService.GetAll(stoppingToken);
 
             foreach (var session in sessions)

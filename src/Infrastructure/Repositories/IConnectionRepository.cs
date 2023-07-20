@@ -4,13 +4,13 @@ namespace Infrastructure.Repositories;
 
 public interface IConnectionRepository
 {
-    ICollection<Connection> GetAll();
+    Task<ICollection<Connection>> GetAll();
 
-    void Add(string connectionId, Guid sessionId);
+    Task Add(string connectionId, Guid sessionId);
 
-    void Update(string connectionId, Guid userId);
+    Task Update(string connectionId, Guid userId);
 
-    void Remove(string connectionId);
+    Task Remove(string connectionId);
 
-    Connection? Get(string connectionId);
+    Task<Connection?> Get(string connectionId);
 }

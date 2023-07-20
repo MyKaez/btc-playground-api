@@ -12,43 +12,43 @@ public class ConnectionRepository : IConnectionRepository
         _memoryCache = memoryCache;
     }
 
-    public ICollection<Connection> GetAll()
+    public Task<ICollection<Connection>> GetAll()
     {
         var connections = _memoryCache.GetOrCreate<List<Connection>>(
             "Connections",
             _ => new List<Connection>()
         );
 
-        return connections!;
+        return Task.FromResult<ICollection<Connection>>(connections!);
     }
 
-    public void Add(string connectionId, Guid sessionId)
+    public async Task Add(string connectionId, Guid sessionId)
     {
-        var connections = GetAll();
+        var connections = await GetAll();
         var con = new Connection { Id = connectionId, SessionId = sessionId };
 
         connections.Add(con);
     }
 
-    public void Update(string connectionId, Guid userId)
+    public async Task Update(string connectionId, Guid userId)
     {
-        var connection = Get(connectionId);
+        var connection = await Get(connectionId);
 
         if (connection is not null)
             connection.UserId = userId;
     }
 
-    public void Remove(string connectionId)
+    public async Task Remove(string connectionId)
     {
-        var connections = GetAll();
+        var connections = await GetAll();
         var con = connections.First(c => c.Id == connectionId);
 
         connections.Remove(con);
     }
 
-    public Connection? Get(string connectionId)
+    public async Task<Connection?> Get(string connectionId)
     {
-        var connections = GetAll();
+        var connections = await GetAll();
         var con = connections.FirstOrDefault(c => c.Id == connectionId);
 
         return con;

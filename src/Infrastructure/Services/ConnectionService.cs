@@ -15,32 +15,32 @@ public class ConnectionService : IConnectionService
         _mapper = mapper;
     }
 
-    public ICollection<Connection> GetAll()
+    public async Task<ICollection<Connection>> GetAll()
     {
-        var connections = _connectionRepository.GetAll();
+        var connections = await _connectionRepository.GetAll();
         var res = connections.Select(con => _mapper.Map<Connection>(con)).ToList();
 
         return res;
     }
 
-    public void Add(string connectionId, Guid sessionId)
+    public async Task Add(string connectionId, Guid sessionId)
     {
-        _connectionRepository.Add(connectionId, sessionId);
+        await _connectionRepository.Add(connectionId, sessionId);
     }
 
-    public void Update(string connectionId, Guid userId)
+    public async Task Update(string connectionId, Guid userId)
     {
-        _connectionRepository.Update(connectionId, userId);
+        await _connectionRepository.Update(connectionId, userId);
     }
 
-    public void Remove(string connectionId)
+    public async Task Remove(string connectionId)
     {
-        _connectionRepository.Remove(connectionId);
+        await _connectionRepository.Remove(connectionId);
     }
 
-    public Connection? Get(string connectionId)
+    public async Task<Connection?> Get(string connectionId)
     {
-        var connection = _connectionRepository.Get(connectionId);
+        var connection = await _connectionRepository.Get(connectionId);
         var res = connection is null ? null : _mapper.Map<Connection>(connection);
 
         return res;
