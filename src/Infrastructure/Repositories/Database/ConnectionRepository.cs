@@ -39,7 +39,10 @@ public class ConnectionRepository : IConnectionRepository
     {
         var con = await _context.Connections.FindAsync(connectionId);
 
-        _context.Remove(con!);
+        if (con is null)
+            return;
+        
+        _context.Remove(con);
         await _context.SaveChangesAsync();
     }
 
