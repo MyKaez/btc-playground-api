@@ -35,7 +35,11 @@ jobs:
 
       - name: Run Tests
         run: dotnet test --filter !~Service.Integration
-        
+
+      - name: Delete old files from a folder
+        with:
+          dir: ./pub
+                
       - name: Publish API
         run: dotnet publish -o ./pub
 
