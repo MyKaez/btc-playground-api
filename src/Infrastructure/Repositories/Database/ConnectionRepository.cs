@@ -18,21 +18,33 @@ public class ConnectionRepository : IConnectionRepository
 
     public void Add(string connectionId, Guid sessionId)
     {
-        throw new NotImplementedException();
+        var connection = new Connection{Id = connectionId, SessionId = sessionId};
+        
+        _context.Add(connection);
+        _context.SaveChanges();
     }
 
     public void Update(string connectionId, Guid userId)
     {
-        throw new NotImplementedException();
+        var connection = _context.Connections.First(c => c.Id == connectionId);
+        var user = _context.Users.First(u => u.Id == userId);
+        
+        connection.UserId = userId;
+        user.ConnectionId = connectionId;
+        
+        _context.SaveChanges();
     }
 
     public void Remove(string connectionId)
     {
-        throw new NotImplementedException();
+        var con = _context.Connections.First(c => c.Id == connectionId);
+
+        _context.Remove(con);
+        _context.SaveChanges();
     }
 
     public Connection? Get(string connectionId)
     {
-        throw new NotImplementedException();
+        return _context.Connections.Find(connectionId);
     }
 }
