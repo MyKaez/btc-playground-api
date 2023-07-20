@@ -29,6 +29,7 @@ public class DeleteObsoleteSessions : BackgroundService
             {
                 if (!session.IsDeletable())
                     continue;
+                
                 if (HasNoConnection(connections, session))
                     await DeleteSession(stoppingToken, session);
                 else if (IsExpired(session))
