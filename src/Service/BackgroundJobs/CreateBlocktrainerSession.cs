@@ -17,7 +17,6 @@ public class CreateBlocktrainerSession : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
-        var userService = _serviceProvider.GetRequiredService<IUserService>();
         var sessions = await sessionService.GetAll(stoppingToken);
         var session = sessions.FirstOrDefault(s => s.Name == Extensions.SessionExtensions.BlocktrainerSessionName) ??
                       await sessionService.CreateSession(
@@ -41,12 +40,14 @@ public class CreateBlocktrainerSession : BackgroundService
 
             if (blockTrainerSession.Updated.AddMinutes(15) < DateTime.UtcNow)
             {
-                update.Action = SessionAction.Reset;
+                await sessionService.DeleteSession(blockTrainerSession.Id, stoppingToken);
 
-                await sessionService.UpdateSession(update, stoppingToken);
-
-                foreach (var user in await userService.GetBySessionId(session.Id, stoppingToken))
-                    await sessionService.DeleteUser(session.Id, user.Id, stoppingToken);
+                session = await sessionService.CreateSession(
+                    Extensions.SessionExtensions.BlocktrainerSessionName, JsonDocument.Parse("{}").RootElement,
+                    stoppingToken);
+                
+                if (session is null)
+                    throw new NotSupportedException("Cannot create Blocktrainer session");
             }
 
             await Task.Delay(60_000, stoppingToken);
