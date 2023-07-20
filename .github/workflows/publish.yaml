@@ -23,7 +23,6 @@ jobs:
           replace: ${{ secrets.SQL_CONNECTION_STRING }}
           include: "**/appsettings.*.json"
           regex: false
-          
 
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
@@ -39,6 +38,15 @@ jobs:
       - name: Publish API
         run: dotnet publish -o ./pub
 
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "Development"
+          replace: "Production"
+          include: "**/web.config"
+          regex: false
+          
+          
      # - name: Upload Binaries via FTP
      #   uses: SamKirkland/FTP-Deploy-Action@4.0.0
      #   with:
