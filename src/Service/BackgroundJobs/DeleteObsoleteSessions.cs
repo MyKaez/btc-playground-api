@@ -34,6 +34,7 @@ public class DeleteObsoleteSessions : BackgroundService
                     await DeleteSession(stoppingToken, session);
                 else if (IsExpired(session))
                     await DeleteSession(stoppingToken, session);
+                // todo implement "all users are deleted" > User.IsDeleted
             }
 
             await Task.Delay(30_000, stoppingToken);
