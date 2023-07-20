@@ -2,7 +2,7 @@
 
 public class Connection
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = "";
 
     public Guid? SessionId { get; set; }
 
