@@ -31,7 +31,7 @@ public class DeleteObsoleteSessions : BackgroundService
                     continue;
                 if (HasNoConnection(connections, session))
                     await DeleteSession(stoppingToken, session);
-                if (IsExpired(session))
+                else if (IsExpired(session))
                     await DeleteSession(stoppingToken, session);
             }
 
