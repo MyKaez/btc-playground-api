@@ -51,9 +51,6 @@ public class SessionRepository : ISessionRepository
         if (session is null)
             return;
 
-        _context.RemoveRange(session.Messages);
-        _context.RemoveRange(session.Interactions);
-        _context.RemoveRange(session.Interactions.Select(i => i.User).Where(u => u != null).Select(u => u!));
         _context.Remove(session);
 
         await _context.SaveChangesAsync(cancellationToken);
