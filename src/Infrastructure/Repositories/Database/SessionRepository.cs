@@ -51,6 +51,15 @@ public class SessionRepository : ISessionRepository
         if (session is null)
             return;
 
+        var interactions = _context.Interactions.Where(i => i.SessionId == id).Include(i => i.User).ToArray();
+        var users = interactions.Select(i => i.User).Where(i => i != null).Select(i => i!).ToArray();
+        var messages = _context.Messages.Where(i => i.SessionId == id).ToArray();
+        var connections = _context.Connections.Where(c => c.SessionId == id).ToArray();
+        
+        _context.Users.RemoveRange(users);
+        _context.Interactions.RemoveRange(interactions);
+        _context.Messages.RemoveRange(messages);
+        _context.Connections.RemoveRange(connections);
         _context.Remove(session);
 
         await _context.SaveChangesAsync(cancellationToken);
