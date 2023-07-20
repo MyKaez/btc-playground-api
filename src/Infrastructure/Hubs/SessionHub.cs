@@ -4,6 +4,7 @@ using Application.Simulations;
 using Domain.Simulations;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Hubs;
@@ -15,18 +16,13 @@ namespace Infrastructure.Hubs;
 // https://learn.microsoft.com/en-us/aspnet/signalr/overview/guide-to-the-api/working-with-groups
 public class SessionHub : Hub
 {
-    private readonly IConnectionService _connectionService;
-    private readonly ISessionService _sessionService;
-    private readonly ISimulatorFactory _simulatorFactory;
     private readonly ILogger<SessionHub> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public SessionHub(ILogger<SessionHub> logger, IConnectionService connectionService, ISessionService sessionService,
-        ISimulatorFactory simulatorFactory)
+    public SessionHub(ILogger<SessionHub> logger, IServiceProvider serviceProvider)
     {
         _logger = logger;
-        _connectionService = connectionService;
-        _sessionService = sessionService;
-        _simulatorFactory = simulatorFactory;
+        _serviceProvider = serviceProvider;
     }
 
     public override Task OnConnectedAsync()
@@ -38,7 +34,8 @@ public class SessionHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var connection = await _connectionService.Get(Context.ConnectionId);
+        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+        var connection = await connectionService.Get(Context.ConnectionId);
 
         if (connection is null)
         {
@@ -46,20 +43,23 @@ public class SessionHub : Hub
         }
         else
         {
-            await _connectionService.Remove(Context.ConnectionId);
+            await connectionService.Remove(Context.ConnectionId);
+            
             _logger.LogInformation("Session {SessionID} disconnected from {Connection}",
                 connection.SessionId, Context.ConnectionId);
 
             if (connection.UserId.HasValue)
             {
-                var session = await _sessionService.GetById(connection.SessionId, CancellationToken.None);
+                var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
+                var session = await sessionService.GetById(connection.SessionId, CancellationToken.None);
                 var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
                 
-                await _sessionService.DeleteUser(connection.SessionId, connection.UserId.Value, CancellationToken.None);
+                await sessionService.DeleteUser(connection.SessionId, connection.UserId.Value, CancellationToken.None);
 
                 if (simulationType != "")
                 {
-                    var simulator = _simulatorFactory.Create(simulationType);
+                    var simulatorFactory = _serviceProvider.GetRequiredService<ISimulatorFactory>();
+                    var simulator = simulatorFactory.Create(simulationType);
 
                     await simulator.UserDelete(session, connection.UserId.Value, CancellationToken.None);
                 }
@@ -73,25 +73,27 @@ public class SessionHub : Hub
     ///     This method is meant to be called by the frontend. In order to interact properly with the api, the session needs to
     ///     be registered here.
     /// </summary>
-    public Task RegisterSession(Guid sessionId)
+    public async Task RegisterSession(Guid sessionId)
     {
-        _connectionService.Add(Context.ConnectionId, sessionId);
+        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+        
+        await connectionService.Add(Context.ConnectionId, sessionId);
+        
         _logger.LogInformation(
             "Session {SessionID} was registered for Connection {Connection}", sessionId, Context.ConnectionId);
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
     ///     This method is meant to be called by the frontend. In order to interact properly with the api, the session needs to
     ///     be registered here.
     /// </summary>
-    public Task RegisterUser(Guid userId)
+    public async  Task RegisterUser(Guid userId)
     {
-        _connectionService.Update(Context.ConnectionId, userId);
+        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+        
+        await connectionService.Update(Context.ConnectionId, userId);
+        
         _logger.LogInformation(
             "User {UserID} was registered for Connection {Connection}", userId, Context.ConnectionId);
-
-        return Task.CompletedTask;
     }
 }
