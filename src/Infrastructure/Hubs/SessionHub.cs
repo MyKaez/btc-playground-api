@@ -2,10 +2,13 @@
 using Application.Services;
 using Application.Simulations;
 using Domain.Simulations;
+using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Infrastructure.Hubs;
 
@@ -18,6 +21,11 @@ public class SessionHub : Hub
 {
     private readonly ILogger<SessionHub> _logger;
     private readonly IServiceProvider _serviceProvider;
+
+    private readonly AsyncPolicy _retryPolicy = Policy
+        .Handle<SqlException>(e =>
+            e.Message.Contains("deadlocked on lock resources with another process"))
+        .WaitAndRetryAsync(5, current => TimeSpan.FromMilliseconds(50 * (current +1)));
 
     public SessionHub(ILogger<SessionHub> logger, IServiceProvider serviceProvider)
     {
@@ -34,39 +42,49 @@ public class SessionHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
-        var connection = await connectionService.Get(Context.ConnectionId);
+        if (exception is not null)
+            _logger.LogError(exception, "Erroneously disconnected connection {Connection}", Context.ConnectionId);
 
-        if (connection is null)
+        await _retryPolicy.ExecuteAsync(async () =>
         {
-            _logger.LogInformation("Disconnected connection {Connection}", Context.ConnectionId);
-        }
-        else
-        {
-            _logger.LogInformation("Session {SessionID} disconnected from {Connection}",
-                connection.SessionId, Context.ConnectionId);
+            var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+            var connection = await connectionService.Get(Context.ConnectionId);
 
-            if (connection.UserId.HasValue)
+            if (connection is null)
             {
-                var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
-                var session = await sessionService.GetById(connection.SessionId, CancellationToken.None);
-                var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
-
-                await sessionService.DeleteUser(connection.SessionId, connection.UserId.Value, CancellationToken.None);
-
-                if (simulationType != "")
-                {
-                    var simulatorFactory = _serviceProvider.GetRequiredService<ISimulatorFactory>();
-                    var simulator = simulatorFactory.Create(simulationType);
-
-                    await simulator.UserDelete(session, connection.UserId.Value, CancellationToken.None);
-                }
+                _logger.LogInformation("Disconnected connection {Connection}", Context.ConnectionId);
             }
             else
-                await connectionService.Remove(Context.ConnectionId);
-        }
+            {
+                _logger.LogInformation("Session {SessionID} disconnected from {Connection}",
+                    connection.SessionId, Context.ConnectionId);
+
+                if (connection.UserId.HasValue)
+                    await DisconnectUser(connection);
+                else
+                    await connectionService.Remove(Context.ConnectionId);
+            }
+        });
 
         await base.OnDisconnectedAsync(exception);
+    }
+
+    private async Task DisconnectUser(Connection connection)
+    {
+        var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
+        var session = await sessionService.GetById(connection.SessionId, CancellationToken.None);
+        var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
+
+        await sessionService.DeleteUser(connection.SessionId, connection.UserId.Value,
+            CancellationToken.None);
+
+        if (simulationType != "")
+        {
+            var simulatorFactory = _serviceProvider.GetRequiredService<ISimulatorFactory>();
+            var simulator = simulatorFactory.Create(simulationType);
+
+            await simulator.UserDelete(session, connection.UserId.Value, CancellationToken.None);
+        }
     }
 
     /// <summary>
