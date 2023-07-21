@@ -24,7 +24,7 @@ public class SessionHub : Hub
     private readonly AsyncPolicy _retryPolicy = Policy
         .Handle<SqlException>(e =>
             e.Message.Contains("deadlocked on lock resources with another process"))
-        .WaitAndRetryAsync(5, current => TimeSpan.FromMilliseconds(50 * (current +1)));
+        .WaitAndRetryAsync(5, current => TimeSpan.FromMilliseconds(50 * (current + 1)));
 
     public SessionHub(ILogger<SessionHub> logger, IServiceProvider serviceProvider)
     {
@@ -70,20 +70,23 @@ public class SessionHub : Hub
 
     private async Task DisconnectUser(Guid sessionId, Guid userId)
     {
-        var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
-        var session = await sessionService.GetById(sessionId, CancellationToken.None);
-        var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
-
-        await sessionService.DeleteUser(sessionId, userId,
-            CancellationToken.None);
-
-        if (simulationType != "")
+        await _retryPolicy.ExecuteAsync(async () =>
         {
-            var simulatorFactory = _serviceProvider.GetRequiredService<ISimulatorFactory>();
-            var simulator = simulatorFactory.Create(simulationType);
+            var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
+            var session = await sessionService.GetById(sessionId, CancellationToken.None);
+            var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
 
-            await simulator.UserDelete(session, userId, CancellationToken.None);
-        }
+            await sessionService.DeleteUser(sessionId, userId,
+                CancellationToken.None);
+
+            if (simulationType != "")
+            {
+                var simulatorFactory = _serviceProvider.GetRequiredService<ISimulatorFactory>();
+                var simulator = simulatorFactory.Create(simulationType);
+
+                await simulator.UserDelete(session, userId, CancellationToken.None);
+            }
+        });
     }
 
     /// <summary>
@@ -92,12 +95,15 @@ public class SessionHub : Hub
     /// </summary>
     public async Task RegisterSession(Guid sessionId)
     {
-        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+        await _retryPolicy.ExecuteAsync(async () =>
+        {
+            var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
 
-        await connectionService.Add(Context.ConnectionId, sessionId);
+            await connectionService.Add(Context.ConnectionId, sessionId);
 
-        _logger.LogInformation(
-            "Session {SessionID} was registered for Connection {Connection}", sessionId, Context.ConnectionId);
+            _logger.LogInformation(
+                "Session {SessionID} was registered for Connection {Connection}", sessionId, Context.ConnectionId);
+        });
     }
 
     /// <summary>
@@ -106,11 +112,14 @@ public class SessionHub : Hub
     /// </summary>
     public async Task RegisterUser(Guid userId)
     {
-        var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
+        await _retryPolicy.ExecuteAsync(async () =>
+        {
+            var connectionService = _serviceProvider.GetRequiredService<IConnectionService>();
 
-        await connectionService.Update(Context.ConnectionId, userId);
+            await connectionService.Update(Context.ConnectionId, userId);
 
-        _logger.LogInformation(
-            "User {UserID} was registered for Connection {Connection}", userId, Context.ConnectionId);
+            _logger.LogInformation(
+                "User {UserID} was registered for Connection {Connection}", userId, Context.ConnectionId);
+        });
     }
 }
