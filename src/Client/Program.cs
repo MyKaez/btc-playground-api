@@ -43,7 +43,7 @@ connections.Add(connection);
 
 var stopwatch = Stopwatch.StartNew();
 var counter = 0;
-var tasks = Enumerable.Range(0, 50).Select(_ => CreateTask(connections, session)).ToArray();
+var tasks = Enumerable.Range(0, 500).Select(_ => CreateTask(connections, session)).ToArray();
 
 await Parallel.ForEachAsync(tasks, async (innerTask, _) =>
 {
@@ -64,7 +64,7 @@ foreach (var con in connections)
 
 async Task CreateTask(BlockingCollection<HubConnection> blockingCollection, ControlObject controlObject)
 {
-    await Task.Delay(Random.Shared.Next(0, 20_000));
+    await Task.Delay(Random.Shared.Next(0, 30_000));
 
     var userConnectionBuilder = new HubConnectionBuilder()
         .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
