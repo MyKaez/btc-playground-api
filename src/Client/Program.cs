@@ -9,7 +9,7 @@ using Service.Models.Requests;
 
 
 const string baseUrl = "https://api.btcis.me/";
-    //"https://localhost:5001/";
+//"https://localhost:5001/";
 
 var http = new HttpClient
 {
@@ -27,6 +27,9 @@ var opt = new JsonSerializerOptions
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 };
 var session = await res.Content.ReadFromJsonAsync<ControlObject>(opt);
+
+Console.WriteLine(session.Id);
+Console.WriteLine(session.ControlId);
 var hubConnectionBuilder = new HubConnectionBuilder()
     .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
 var connection = hubConnectionBuilder.Build();
@@ -39,10 +42,18 @@ var connections = new BlockingCollection<HubConnection>();
 connections.Add(connection);
 
 var stopwatch = Stopwatch.StartNew();
-var tasks = Enumerable.Range(0, 300).Select(_ => CreateTask(connections, session)).ToArray();
+var counter = 0;
+var tasks = Enumerable.Range(0, 50).Select(_ => CreateTask(connections, session)).ToArray();
 
-await Parallel.ForEachAsync(tasks, async (innerTask, _) => await innerTask);
+await Parallel.ForEachAsync(tasks, async (innerTask, _) =>
+{
+    Interlocked.Increment(ref counter);
+    Console.Write("\rHandling connection no " + counter);
 
+    await innerTask;
+});
+
+Console.WriteLine();
 Console.WriteLine($"Created {connections.Count} connections in {stopwatch.Elapsed}");
 stopwatch.Stop();
 
@@ -53,30 +64,55 @@ foreach (var con in connections)
 
 async Task CreateTask(BlockingCollection<HubConnection> blockingCollection, ControlObject controlObject)
 {
-    try
-    {
-        await Task.Delay(Random.Shared.Next(0, 30_000));
+    await Task.Delay(Random.Shared.Next(0, 20_000));
 
-        var userConnectionBuilder = new HubConnectionBuilder()
-            .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
-        var userConnection = userConnectionBuilder.Build();
+    var userConnectionBuilder = new HubConnectionBuilder()
+        .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
+    var userConnection = userConnectionBuilder.Build();
+
+    userConnection.Closed += async exception =>
+    {
+        if (exception is not null)
+            Console.WriteLine("Error, retrying:" + exception.Message);
+        
         await userConnection.StartAsync();
         await userConnection.InvokeCoreAsync("RegisterSession", new object[] { controlObject.Id });
+    };
 
-        var userHttp = new HttpClient
-        {
-            BaseAddress = new Uri(baseUrl + "v1/sessions/")
-        };
-        var user = new UserRequest { Name = "Kenny" + Guid.NewGuid().ToString().Split('-')[0] };
-        var userRes = await userHttp.PostAsJsonAsync($"{controlObject.Id}/users", user);
-        var userX = await userRes.Content.ReadFromJsonAsync<ControlObject>();
+    await userConnection.StartAsync();
+    await userConnection.InvokeCoreAsync("RegisterSession", new object[] { controlObject.Id });
 
-        await userConnection.InvokeCoreAsync("RegisterUser", new object[] { userX.Id });
+    await Execute();
 
-        blockingCollection.Add(userConnection);
-    }
-    catch (Exception e)
+    async Task Execute()
     {
-        Console.WriteLine("Error: " + e.Message);
+        var c = 0;
+        while (true)
+        {
+            try
+            {
+                var userHttp = new HttpClient
+                {
+                    BaseAddress = new Uri(baseUrl + "v1/sessions/"),
+                    Timeout = TimeSpan.FromSeconds(10)
+                };
+                var user = new UserRequest { Name = "Kenny" + Guid.NewGuid().ToString().Split('-')[0] };
+                var userRes = await userHttp.PostAsJsonAsync($"{controlObject.Id}/users", user);
+                var userX = await userRes.Content.ReadFromJsonAsync<ControlObject>();
+                
+                await userConnection.InvokeCoreAsync("RegisterUser", new object[] { userX.Id });
+
+                userConnection.KeepAliveInterval = TimeSpan.FromSeconds(10);
+                userConnection.ServerTimeout = TimeSpan.FromMinutes(10);
+
+                blockingCollection.Add(userConnection);
+                return;
+            }
+            catch (Exception e) when (c++ < 3)
+            {
+                Console.WriteLine(e.Message);
+                c++;
+            }
+        }
     }
 }

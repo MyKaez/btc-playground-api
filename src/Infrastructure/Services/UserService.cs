@@ -1,9 +1,7 @@
 ﻿using Application.Services;
 using AutoMapper;
 using Domain.Models;
-using Infrastructure.Hubs;
 using Infrastructure.Repositories;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Infrastructure.Services;
 
@@ -11,13 +9,13 @@ public class UserService : IUserService
 {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
-    private readonly IHubContext<SessionHub> _hubContext;
+    private readonly IUpdateService _updateService;
 
-    public UserService(IUserRepository userRepository, IMapper mapper, IHubContext<SessionHub> hubContext)
+    public UserService(IUserRepository userRepository, IMapper mapper, IUpdateService updateService)
     {
         _userRepository = userRepository;
         _mapper = mapper;
-        _hubContext = hubContext;
+        _updateService = updateService;
     }
 
     public async Task<User?> GetById(Guid userId, CancellationToken cancellationToken)
@@ -37,8 +35,8 @@ public class UserService : IUserService
         var res = _mapper.Map<User>(user);
 
         await _userRepository.Create(session.Id, user, cancellationToken);
-        await _hubContext.Clients.All.SendAsync(session.Id + ":CreateUser", new { res.Id, res.Name, res.Status },
-            cancellationToken);
+        
+        _updateService.AddUpdate(session.Id);
 
         return res;
     }
@@ -57,9 +55,8 @@ public class UserService : IUserService
 
         var res = _mapper.Map<User>(user);
 
-        await _hubContext.Clients.All.SendAsync(update.SessionId + ":UserUpdate",
-            new { res.Id, res.Status, res.Configuration }, cancellationToken);
-
+        _updateService.AddUpdate(update.SessionId);
+        
         return res;
     }
 

@@ -21,12 +21,15 @@ public class SessionService : ISessionService
 
     private readonly ISessionRepository _sessionRepository;
     private readonly IMapper _mapper;
+    private readonly IUpdateService _updateService;
     private readonly IHubContext<SessionHub> _hubContext;
 
-    public SessionService(ISessionRepository sessionRepository, IMapper mapper, IHubContext<SessionHub> hubContext)
+    public SessionService(ISessionRepository sessionRepository, IMapper mapper, IUpdateService updateService,
+        IHubContext<SessionHub> hubContext)
     {
         _sessionRepository = sessionRepository;
         _mapper = mapper;
+        _updateService = updateService;
         _hubContext = hubContext;
     }
 
@@ -63,13 +66,11 @@ public class SessionService : ISessionService
         var res = _mapper.Map<Session>(session);
 
         await _sessionRepository.Add(session, cancellationToken);
-        await _hubContext.Clients.All.SendAsync(
-            res.Id + ":CreateSession", new { res.Id, res.Status }, cancellationToken
-        );
+        _updateService.AddUpdate(session.Id);
 
         return res;
     }
-    
+
     public async Task<Session?> UpdateSession(SessionUpdate update, CancellationToken cancellationToken)
     {
         var session = await _sessionRepository.Update(
@@ -103,7 +104,11 @@ public class SessionService : ISessionService
         var res = _mapper.Map<Session>(session);
 
         await _hubContext.Clients.All.SendAsync(update.SessionId + ":SessionUpdate",
-            new { res.Id, res.Status, res.Configuration, session.StartTime, session.EndTime }, cancellationToken);
+            new
+            {
+                res.Id, res.Status, res.Configuration, session.StartTime, session.EndTime,
+                Urgent = session.EndTime.HasValue
+            }, cancellationToken);
 
         return res;
     }
@@ -122,12 +127,13 @@ public class SessionService : ISessionService
                     interaction.IsDeleted = true;
             }, cancellationToken);
 
-        await _hubContext.Clients.All.SendAsync(sessionId + ":DeleteUser", userId, cancellationToken);
+        _updateService.AddUpdate(sessionId);
     }
 
     public async Task DeleteSession(Guid sessionId, CancellationToken cancellationToken)
     {
         await _sessionRepository.Delete(sessionId, cancellationToken);
-        await _hubContext.Clients.All.SendAsync(sessionId + ":DeleteSession", sessionId, cancellationToken);
+
+        _updateService.AddUpdate(sessionId);
     }
 }
