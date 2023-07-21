@@ -60,7 +60,7 @@ public class SessionHub : Hub
                     connection.SessionId, Context.ConnectionId);
 
                 if (connection.UserId.HasValue)
-                    await DisconnectUser(connection);
+                    await DisconnectUser(connection.SessionId, connection.UserId.Value);
                 else
                     await connectionService.Remove(Context.ConnectionId);
             }
@@ -69,13 +69,13 @@ public class SessionHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    private async Task DisconnectUser(Connection connection)
+    private async Task DisconnectUser(Guid sessionId, Guid userId)
     {
         var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
-        var session = await sessionService.GetById(connection.SessionId, CancellationToken.None);
+        var session = await sessionService.GetById(sessionId, CancellationToken.None);
         var simulationType = session!.Configuration?.FromJsonElement<Simulation>()?.SimulationType ?? "";
 
-        await sessionService.DeleteUser(connection.SessionId, connection.UserId.Value,
+        await sessionService.DeleteUser(sessionId, userId,
             CancellationToken.None);
 
         if (simulationType != "")
@@ -83,7 +83,7 @@ public class SessionHub : Hub
             var simulatorFactory = _serviceProvider.GetRequiredService<ISimulatorFactory>();
             var simulator = simulatorFactory.Create(simulationType);
 
-            await simulator.UserDelete(session, connection.UserId.Value, CancellationToken.None);
+            await simulator.UserDelete(session, userId, CancellationToken.None);
         }
     }
 
