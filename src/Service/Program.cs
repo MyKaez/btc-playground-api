@@ -10,11 +10,11 @@ builder.Services.AddCors(options =>
         policy.AllowAnyHeader()
             .AllowAnyMethod()
             .WithOrigins(
+                "https://fixesth.is",
+                "http://fixesth.is",
                 "http://localhost:4200",
                 "http://localhost:8100",
-                "https://btcis.me",
-                "https://fixesth.is",
-                "http://fixesth.is"
+                "https://btcis.me"
             )
             .AllowCredentials()
     )
