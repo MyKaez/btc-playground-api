@@ -2,7 +2,6 @@
 using Application.Services;
 using Application.Simulations;
 using Domain.Simulations;
-using Infrastructure.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
