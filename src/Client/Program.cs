@@ -1,39 +1,82 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Text.Json;
+using Client.Models;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.SignalR.Client;
+using Service.Models.Requests;
 
-var stop = TimeSpan.FromSeconds(60);
-var i = 0;
-var task = Task.Run(async () =>
+
+const string baseUrl = "https://api.btcis.me/";
+    //"https://localhost:5001/";
+
+var http = new HttpClient
 {
-    var stopwatch = Stopwatch.StartNew();
-    var http = new HttpClient
-    {
-        BaseAddress = new Uri("https://api.btcis.me/v1/")
-    };
+    BaseAddress = new Uri(baseUrl + "v1/")
+};
 
-    while (stopwatch.Elapsed < stop)
-    {
-        i++;
-        await http.GetFromJsonAsync<BlockDto[]>("blocks");
-    }
-});
-var tasks = new[] { task, task, task, task, task, task, task, task, task };
+var create = new SessionRequest
+{
+    Name = "Kenny",
+    Configuration = null
+};
+var res = await http.PostAsJsonAsync("sessions", create);
+var opt = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+};
+var session = await res.Content.ReadFromJsonAsync<ControlObject>(opt);
+var hubConnectionBuilder = new HubConnectionBuilder()
+    .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
+var connection = hubConnectionBuilder.Build();
+
+await connection.StartAsync();
+await connection.InvokeCoreAsync("RegisterSession", new object[] { session.Id });
+
+var connections = new BlockingCollection<HubConnection>();
+
+connections.Add(connection);
+
+var stopwatch = Stopwatch.StartNew();
+var tasks = Enumerable.Range(0, 300).Select(_ => CreateTask(connections, session)).ToArray();
 
 await Parallel.ForEachAsync(tasks, async (innerTask, _) => await innerTask);
 
-Console.WriteLine($"Executed {i} requests in {stop}");
+Console.WriteLine($"Created {connections.Count} connections in {stopwatch.Elapsed}");
+stopwatch.Stop();
 
-public class BlockDto
+foreach (var con in connections)
 {
-    public string Id { get; init; } = "";
+    await con.DisposeAsync();
+}
 
-    public long Height { get; init; }
+async Task CreateTask(BlockingCollection<HubConnection> blockingCollection, ControlObject controlObject)
+{
+    try
+    {
+        await Task.Delay(Random.Shared.Next(0, 30_000));
 
-    public DateTime TimeStamp { get; init; }
+        var userConnectionBuilder = new HubConnectionBuilder()
+            .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
+        var userConnection = userConnectionBuilder.Build();
+        await userConnection.StartAsync();
+        await userConnection.InvokeCoreAsync("RegisterSession", new object[] { controlObject.Id });
 
-    public ulong Nonce { get; init; }
+        var userHttp = new HttpClient
+        {
+            BaseAddress = new Uri(baseUrl + "v1/sessions/")
+        };
+        var user = new UserRequest { Name = "Kenny" + Guid.NewGuid().ToString().Split('-')[0] };
+        var userRes = await userHttp.PostAsJsonAsync($"{controlObject.Id}/users", user);
+        var userX = await userRes.Content.ReadFromJsonAsync<ControlObject>();
 
-    public double Difficulty { get; init; }
+        await userConnection.InvokeCoreAsync("RegisterUser", new object[] { userX.Id });
 
-    public double Probability { get; init; }
+        blockingCollection.Add(userConnection);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("Error: " + e.Message);
+    }
 }
