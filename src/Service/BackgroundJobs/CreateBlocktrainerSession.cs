@@ -32,7 +32,7 @@ public class CreateBlocktrainerSession : BackgroundService
             if (blockTrainerSession is null)
                 throw new NotSupportedException("Cannot find Blocktrainer session");
 
-            if (blockTrainerSession.ExpiresAt > DateTime.UtcNow)
+            if (blockTrainerSession.ExpiresAt < DateTime.UtcNow)
             {
                 await sessionService.DeleteSession(blockTrainerSession.Id, stoppingToken);
 
