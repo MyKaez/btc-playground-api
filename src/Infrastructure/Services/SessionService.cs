@@ -111,6 +111,7 @@ public class SessionService : ISessionService
 
         var res = _mapper.Map<Session>(session);
 
+        _updateService.AddUpdate(session.Id);
         await _hubContext.Clients.All.SendAsync(update.SessionId + ":SessionUpdate",
             new
             {
