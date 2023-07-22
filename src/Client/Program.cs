@@ -28,11 +28,6 @@ Console.WriteLine();
 Console.WriteLine($"Created {connections.Count} connections in {stopwatch.Elapsed}");
 stopwatch.Stop();
 
-foreach (var con in connections)
-{
-    await con.DisposeAsync();
-}
-
 async Task CreateUser()
 {
     await Task.Delay(Random.Shared.Next(0, 30_000));

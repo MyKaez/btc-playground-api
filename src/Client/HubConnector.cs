@@ -9,9 +9,9 @@ public class HubConnector
     public static async Task<HubConnection> CreateConnection(string baseUrl, Guid sessionId)
     {
         var hubConnectionBuilder = new HubConnectionBuilder()
-            .WithUrl(baseUrl + "sessions-hub", o => { o.Transports = HttpTransportType.WebSockets; });
+            .WithUrl(baseUrl + "sessions-hub", o => o.Transports = HttpTransportType.WebSockets);
         var connection = hubConnectionBuilder.Build();
-
+        
         await connection.StartAsync();
         await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
 

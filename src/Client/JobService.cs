@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Client.Models;
 using Service.Models.Requests;
@@ -9,25 +10,29 @@ public class JobService
 {
     public static async Task<ControlObject> CreateSession(string baseUrl)
     {
-        
         var http = new HttpClient
         {
-            BaseAddress = new Uri(baseUrl + "v1/")
+            BaseAddress = new Uri(baseUrl + "v1/"),
+            Timeout = TimeSpan.FromSeconds(10)
         };
 
-        var create = new SessionRequest
+        var createSession = new SessionRequest
         {
             Name = "Kenny",
             Configuration = null
         };
-        var res = await http.PostAsJsonAsync("sessions", create);
+        var response = await http.PostAsJsonAsync("sessions", createSession);
+        
+        if (response.StatusCode != HttpStatusCode.OK)
+            Console.WriteLine(response.StatusCode);
+        
         var opt = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
-        var session = await res.Content.ReadFromJsonAsync<ControlObject>(opt);
+        var session = await response.Content.ReadFromJsonAsync<ControlObject>(opt);
 
-        Console.WriteLine(session.Id);
+        Console.WriteLine(session!.Id);
         Console.WriteLine(session.ControlId);
 
         return session;
