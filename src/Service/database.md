@@ -13,14 +13,15 @@ dotnet ef database update -- "connection string"
 
 # clear tables
 ```sql
-SELECT s.ID AS Session, u.ID AS [User], i.ID AS Interaction, c.Id Connection
+
+SELECT DISTINCT s.ID AS Session, u.ID AS [User], i.ID AS Interaction, c.Id Connection
 INTO #toClear
 FROM [Sessions] s
-JOIN [Interactions] i ON i.SessionID = s.ID
-JOIN Users u ON u.ID = i.UserID
-JOIN Connections c ON c.SessionID = s.ID
+    JOIN [Interactions] i ON i.SessionID = s.ID
+    JOIN Users u ON u.ID = i.UserID
+    JOIN Connections c ON c.SessionID = s.ID
 WHERE 1=1
-AND s.Name <> 'Blocktrainer'
+  AND s.Name <> 'Blocktrainer'
 
 DELETE FROM Interactions
 WHERE ID IN (SELECT Interaction from #toClear)
