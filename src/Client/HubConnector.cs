@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Connections;
+﻿using Client.Models;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Client;
@@ -22,10 +23,15 @@ public class HubConnector
             await connection.StartAsync();
             await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
         };
-
-        var evt = sessionId + ":UserUpdates";
-
-        connection.On(evt, Array.Empty<Type>(), async _ =>
+        
+        connection.On<Update>(sessionId + ":SessionUpdate", update =>
+        {
+            Console.WriteLine($"Session update: {update.Status}");
+            
+            return Task.CompletedTask;
+        });
+        
+        connection.On(sessionId + ":UserUpdates", async () =>
         {
             try
             {
