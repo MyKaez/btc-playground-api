@@ -32,12 +32,7 @@ public class CreateBlocktrainerSession : BackgroundService
             if (blockTrainerSession is null)
                 throw new NotSupportedException("Cannot find Blocktrainer session");
 
-            var update = new SessionUpdate
-                { SessionId = session.Id, Configuration = blockTrainerSession.Configuration!.Value };
-
-            await sessionService.UpdateSession(update, stoppingToken);
-
-            if (blockTrainerSession.Updated.AddMinutes(15) < DateTime.UtcNow)
+            if (blockTrainerSession.ExpiresAt > DateTime.UtcNow)
             {
                 await sessionService.DeleteSession(blockTrainerSession.Id, stoppingToken);
 
