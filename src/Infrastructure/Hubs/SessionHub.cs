@@ -123,10 +123,13 @@ public class SessionHub : Hub
         });
     }
 
-    public Task Alive(Guid userId)
+    public Task Alive(Guid? userId)
     {
-        _logger.LogInformation("User {UserID} is alive", userId);
-
+        if (userId.HasValue)
+            _logger.LogInformation("User {UserID} is alive", userId);
+        else
+            _logger.LogInformation("Host is alive");
+        
         return Task.CompletedTask;
     }
 }
