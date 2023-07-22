@@ -19,7 +19,7 @@ var users = Enumerable.Range(0, 200).Select(_ => CreateUser()).ToArray();
 await Parallel.ForEachAsync(users, async (innerTask, _) =>
 {
     Interlocked.Increment(ref counter);
-    Console.Write("\rHandling connection no " + counter);
+    Console.Write("\rHandling connection no " + counter + "\r");
 
     await innerTask;
 });
@@ -30,7 +30,7 @@ stopwatch.Stop();
 
 async Task CreateUser()
 {
-    await Task.Delay(Random.Shared.Next(0, 30_000));
+    await Task.Delay(Random.Shared.Next(0, 10_000));
 
     var userConnection = await HubConnector.CreateConnection(baseUrl, session.Id);
 
