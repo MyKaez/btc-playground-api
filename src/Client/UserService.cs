@@ -7,7 +7,7 @@ namespace Client;
 
 public class UserService
 {
-    public static async Task<bool> Execute(string baseUrl, Guid sessionId, HubConnection userConnection)
+    public static async Task<bool> ConnectUser(string baseUrl, Guid sessionId, HubConnection userConnection)
     {
         var c = 0;
         while (true)
@@ -34,6 +34,10 @@ public class UserService
             {
                 Console.WriteLine(e.Message);
                 c++;
+            }
+            catch
+            {
+                break;
             }
         }
 
