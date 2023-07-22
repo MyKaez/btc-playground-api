@@ -23,7 +23,10 @@ public class SessionUserUpdates : BackgroundService
             var updateService = _serviceProvider.GetRequiredService<IUpdateService>();
             
             foreach (var sessionId in updateService.GetUpdates())
+            {
+                updateService.RemoveUpdate(sessionId);
                 await hubContext.Clients.All.SendAsync(sessionId + ":UserUpdates", stoppingToken);
+            }
         }
     }
 }
