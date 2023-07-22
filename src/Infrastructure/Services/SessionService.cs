@@ -46,8 +46,8 @@ public class SessionService : ISessionService
 
     public async Task<Session?> GetById(Guid id, CancellationToken cancellationToken)
     {
-        if (_updateService.GetUpdates().Contains(id) && _memoryCache.TryGetValue<Session>(id, out var res))
-            return res;
+        if (!_updateService.GetUpdates().Contains(id) && _memoryCache.TryGetValue<Session>(id, out var cached))
+            return cached;
 
         var entity = await _sessionRepository.GetById(id, cancellationToken);
         var session = _mapper.Map<Session>(entity);

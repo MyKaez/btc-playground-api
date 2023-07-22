@@ -67,9 +67,9 @@ public class UserService : IUserService
     public async Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
     {
         var key = "users:" + sessionId;
-        
-        if (!_updateService.GetUpdates().Contains(sessionId))
-            return _memoryCache.Get<User[]>(key) ?? Array.Empty<User>();
+
+        if (!_updateService.GetUpdates().Contains(sessionId) && _memoryCache.TryGetValue<User[]>(key, out var cached))
+            return cached ?? Array.Empty<User>();
 
         var users = await _userRepository.GetBySessionId(sessionId, cancellationToken);
         var res = _mapper.Map<User[]>(users);
