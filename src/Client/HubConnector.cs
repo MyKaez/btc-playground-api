@@ -24,8 +24,11 @@ public class HubConnector
                 => o.Transports = HttpTransportType.WebSockets);
         var connection = hubConnectionBuilder.Build();
 
-        await connection.StartAsync();
-        await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
+        await Policy.ExecuteAsync(async () =>
+        {
+            await connection.StartAsync();
+            await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
+        });
 
         OnSessionClosed(sessionId, connection);
         OnSessoinUpdates(sessionId, connection);
