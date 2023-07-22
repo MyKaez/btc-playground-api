@@ -10,11 +10,11 @@ public class HubConnector
 {
     private static readonly HashSet<string> Errors = new();
 
-    private static readonly AsyncPolicy Policy = Polly.Policy.Handle<Exception>()
+    private static readonly AsyncPolicy ConnectionPolicy = Policy.Handle<Exception>()
         .WaitAndRetryAsync(5, current => TimeSpan.FromMilliseconds(50 * (current + 1)), (exception, _) =>
         {
             if (Errors.Add(exception.Message))
-                Console.WriteLine("Error, retrying:" + exception.Message);
+                Console.WriteLine("Error, retrying: " + exception.Message);
         });
 
     public static async Task<HubConnection> CreateConnection(string baseUrl, Guid sessionId)
@@ -23,8 +23,11 @@ public class HubConnector
             .WithUrl(baseUrl + "sessions-hub", o
                 => o.Transports = HttpTransportType.WebSockets);
         var connection = hubConnectionBuilder.Build();
+        
+        connection.HandshakeTimeout = TimeSpan.FromSeconds(10);
+        connection.ServerTimeout = TimeSpan.FromSeconds(10);
 
-        await Policy.ExecuteAsync(async () =>
+        await ConnectionPolicy.ExecuteAsync(async () =>
         {
             await connection.StartAsync();
             await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
@@ -43,9 +46,12 @@ public class HubConnector
         {
             if (exception is not null)
                 Console.WriteLine("Error, retrying:" + exception.Message);
-
-            await connection.StartAsync();
-            await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
+            
+            await ConnectionPolicy.ExecuteAsync(async () =>
+            {
+                await connection.StartAsync();
+                await connection.InvokeCoreAsync("RegisterSession", new object[] { sessionId });
+            });
         };
     }
 
@@ -63,7 +69,7 @@ public class HubConnector
     {
         connection.On(sessionId + ":UserUpdates", async () =>
         {
-            await Policy.ExecuteAsync(async () =>
+            await ConnectionPolicy.ExecuteAsync(async () =>
             {
                 var http = new HttpClient
                 {
