@@ -37,10 +37,8 @@ public class UserService
             }
             catch
             {
-                break;
+                return false;
             }
         }
-
-        return false;
     }
 }
