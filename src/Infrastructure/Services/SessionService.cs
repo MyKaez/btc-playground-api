@@ -5,6 +5,7 @@ using Domain.Models;
 using Infrastructure.Hubs;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Caching.Memory;
 using Session = Domain.Models.Session;
 
 namespace Infrastructure.Services;
@@ -23,14 +24,16 @@ public class SessionService : ISessionService
     private readonly IMapper _mapper;
     private readonly IUpdateService _updateService;
     private readonly IHubContext<SessionHub> _hubContext;
+    private readonly IMemoryCache _memoryCache;
 
     public SessionService(ISessionRepository sessionRepository, IMapper mapper, IUpdateService updateService,
-        IHubContext<SessionHub> hubContext)
+        IHubContext<SessionHub> hubContext, IMemoryCache memoryCache)
     {
         _sessionRepository = sessionRepository;
         _mapper = mapper;
         _updateService = updateService;
         _hubContext = hubContext;
+        _memoryCache = memoryCache;
     }
 
     public async Task<IEnumerable<Session>> GetAll(CancellationToken cancellationToken)
@@ -43,8 +46,13 @@ public class SessionService : ISessionService
 
     public async Task<Session?> GetById(Guid id, CancellationToken cancellationToken)
     {
+        if (_updateService.GetUpdates().Contains(id) && _memoryCache.TryGetValue<Session>(id, out var res))
+            return res;
+
         var entity = await _sessionRepository.GetById(id, cancellationToken);
         var session = _mapper.Map<Session>(entity);
+
+        _memoryCache.Set(id, session, TimeSpan.FromMinutes(1));
 
         return session;
     }
