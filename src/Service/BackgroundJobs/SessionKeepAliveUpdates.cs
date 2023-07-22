@@ -22,8 +22,10 @@ public class SessionKeepAliveUpdates : BackgroundService
             var hubContext = _serviceProvider.GetRequiredService<IHubContext<SessionHub>>();
             var sessionService = _serviceProvider.GetRequiredService<ISessionService>();
 
-            foreach (var sessionId in await sessionService.GetAll(stoppingToken))
-                await hubContext.Clients.All.SendAsync(sessionId + ":SessionAlive", stoppingToken);
+            var sessions = await sessionService.GetAll(stoppingToken);
+
+            foreach (var session in sessions)
+                await hubContext.Clients.All.SendAsync(session.Id + ":SessionAlive", stoppingToken);
         }
     }
 }
