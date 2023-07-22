@@ -30,7 +30,7 @@ public class JobService
 
             var createSession = new SessionRequest
             {
-                Name = "Kenny",
+                Name = "Kenny" + DateTime.Now,
                 Configuration = null
             };
             var response = await http.PostAsJsonAsync("sessions", createSession);
