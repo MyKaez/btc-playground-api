@@ -2,6 +2,7 @@
 using AutoMapper;
 using Domain.Models;
 using Infrastructure.Repositories;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Infrastructure.Services;
 
@@ -10,12 +11,15 @@ public class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly IUpdateService _updateService;
+    private readonly IMemoryCache _memoryCache;
 
-    public UserService(IUserRepository userRepository, IMapper mapper, IUpdateService updateService)
+    public UserService(IUserRepository userRepository, IMapper mapper, IUpdateService updateService,
+        IMemoryCache memoryCache)
     {
         _userRepository = userRepository;
         _mapper = mapper;
         _updateService = updateService;
+        _memoryCache = memoryCache;
     }
 
     public async Task<User?> GetById(Guid userId, CancellationToken cancellationToken)
@@ -35,7 +39,7 @@ public class UserService : IUserService
         var res = _mapper.Map<User>(user);
 
         await _userRepository.Create(session.Id, user, cancellationToken);
-        
+
         _updateService.AddUpdate(session.Id);
 
         return res;
@@ -56,14 +60,21 @@ public class UserService : IUserService
         var res = _mapper.Map<User>(user);
 
         _updateService.AddUpdate(update.SessionId);
-        
+
         return res;
     }
 
     public async Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
     {
+        var key = "users:" + sessionId;
+        
+        if (!_updateService.GetUpdates().Contains(sessionId))
+            return _memoryCache.Get<User[]>(key) ?? Array.Empty<User>();
+
         var users = await _userRepository.GetBySessionId(sessionId, cancellationToken);
         var res = _mapper.Map<User[]>(users);
+
+        _memoryCache.Set(key, res, TimeSpan.FromMinutes(1));
 
         return res;
     }
