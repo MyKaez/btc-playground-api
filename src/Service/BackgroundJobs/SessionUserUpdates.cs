@@ -24,8 +24,8 @@ public class SessionUserUpdates : BackgroundService
             
             foreach (var sessionId in updateService.GetUpdates())
             {
-                updateService.RemoveUpdate(sessionId);
                 await hubContext.Clients.All.SendAsync(sessionId + ":UserUpdates", stoppingToken);
+                updateService.RemoveUpdate(sessionId);
             }
         }
     }

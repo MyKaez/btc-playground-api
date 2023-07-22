@@ -1,6 +1,7 @@
 ﻿using Application.Services;
 using AutoMapper;
 using Domain.Models;
+using Infrastructure.Extensions;
 using Infrastructure.Repositories;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -66,9 +67,9 @@ public class UserService : IUserService
 
     public async Task<User[]> GetBySessionId(Guid sessionId, CancellationToken cancellationToken)
     {
-        var key = "users:" + sessionId;
+        var key = sessionId.UserCacheKey();
 
-        if (!_updateService.GetUpdates().Contains(sessionId) && _memoryCache.TryGetValue<User[]>(key, out var cached))
+        if (_memoryCache.TryGetValue<User[]>(key, out var cached))
             return cached ?? Array.Empty<User>();
 
         var users = await _userRepository.GetBySessionId(sessionId, cancellationToken);

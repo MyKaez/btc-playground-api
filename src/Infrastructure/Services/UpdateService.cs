@@ -1,13 +1,24 @@
 ﻿using System.Collections.Concurrent;
+using Infrastructure.Extensions;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Infrastructure.Services;
 
 public class UpdateService : IUpdateService
 {
+    private readonly IMemoryCache _memoryCache;
     private BlockingCollection<Guid> _sessions = new();
 
+    public UpdateService(IMemoryCache memoryCache)
+    {
+        _memoryCache = memoryCache;
+    }
+    
     public void AddUpdate(Guid sessionId)
     {
+        _memoryCache.Remove(sessionId);
+        _memoryCache.Remove(sessionId.UserCacheKey());
+        
         if (!_sessions.Contains(sessionId))
             _sessions.TryAdd(sessionId);
     }
