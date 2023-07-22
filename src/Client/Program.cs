@@ -13,7 +13,7 @@ connections.Add(connection);
 
 var stopwatch = Stopwatch.StartNew();
 var counter = 0;
-var tasks = Enumerable.Range(0, 500).Select(_ => CreateTask()).ToArray();
+var tasks = Enumerable.Range(0, 200).Select(_ => CreateTask()).ToArray();
 
 await Parallel.ForEachAsync(tasks, async (innerTask, _) =>
 {
