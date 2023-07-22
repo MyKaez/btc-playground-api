@@ -22,12 +22,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddHostedService<CreateBlocktrainerSession>();
 builder.Services.AddHostedService<DeleteObsoleteSessions>();
 builder.Services.AddHostedService<SessionUserUpdates>();
+builder.Services.AddHostedService<SessionKeepAliveUpdates>();
 builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.SetDefaults());
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
-    options.ClientTimeoutInterval = TimeSpan.FromMinutes(10);
-    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
 }).AddJsonProtocol(options => options.PayloadSerializerOptions.SetDefaults());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

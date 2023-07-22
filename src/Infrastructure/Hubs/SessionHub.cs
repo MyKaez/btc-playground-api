@@ -122,4 +122,11 @@ public class SessionHub : Hub
                 "User {UserID} was registered for Connection {Connection}", userId, Context.ConnectionId);
         });
     }
+
+    public Task Alive(Guid userId)
+    {
+        _logger.LogInformation("User {UserID} is alive", userId);
+
+        return Task.CompletedTask;
+    }
 }
