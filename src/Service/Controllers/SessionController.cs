@@ -31,15 +31,6 @@ public class SessionController : BaseController
         return Result(res, session => _mapper.Map<SessionDto[]>(session));
     }
 
-    [HttpGet("blocktrainer")]
-    public async Task<IActionResult> GetBlocktrainer()
-    {
-        var query = new GetBlocktrainerSession.Query();
-        var res = await _mediator.Send(query);
-        
-        return Result(res, session => _mapper.Map<SessionControlDto>(session));
-    }
-
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, [FromQuery] string? controlId)
     {

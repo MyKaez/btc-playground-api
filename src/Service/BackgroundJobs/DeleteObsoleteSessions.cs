@@ -2,7 +2,6 @@
 using Domain.Models;
 using Infrastructure.Models;
 using Infrastructure.Services;
-using Service.Extensions;
 
 namespace Service.BackgroundJobs;
 
@@ -27,9 +26,6 @@ public class DeleteObsoleteSessions : BackgroundService
 
             foreach (var session in sessions)
             {
-                if (!session.IsDeletable())
-                    continue;
-                
                 if (HasNoConnection(connections, session))
                     await DeleteSession(stoppingToken, session);
                 else if (IsExpired(session))

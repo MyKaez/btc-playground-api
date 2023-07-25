@@ -19,7 +19,6 @@ builder.Services.AddCors(options =>
             .AllowCredentials()
     )
 );
-builder.Services.AddHostedService<CreateBlocktrainerSession>();
 builder.Services.AddHostedService<DeleteObsoleteSessions>();
 builder.Services.AddHostedService<SessionUserUpdates>();
 builder.Services.AddHostedService<SessionKeepAliveUpdates>();
